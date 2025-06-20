@@ -1,17 +1,20 @@
-import React, { useEffect } from "react";
-import "./App.css";
+import React, { useEffect } from 'react';
+import WebApp from '@twa-dev/sdk';   // ✅ корректный импорт
+import './App.css';
 
 function App() {
   useEffect(() => {
-    const tg = window.Telegram.WebApp;
-    tg.ready();  // Говорим Telegram, что мы готовы
-    console.log(tg.initDataUnsafe);  // Выведет ID пользователя, имя и т.д.
+    WebApp.ready();                 // сообщаем Telegram, что всё отрисовалось
+    console.log(WebApp.initData);   // либо WebApp.initDataUnsafe
   }, []);
 
   return (
     <div className="App">
       <h1>📝 Планнер задач</h1>
-      <button className="telegram-button" onClick={() => alert("Создание задачи...")}>
+      <button
+        className="telegram-button"
+        onClick={() => WebApp.showAlert('Создание задачи…')}
+      >
         ➕ Создать задачу
       </button>
     </div>
