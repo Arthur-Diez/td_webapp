@@ -1,10 +1,9 @@
 import React from "react";
 import "./App.css";
-import TelegramWebApp from '@telegram-apps/sdk';
+import { ready, initDataUnsafe } from '@telegram-apps/sdk';
 
-TelegramWebApp.ready();  // Подготовка
-const initData = TelegramWebApp.initDataUnsafe;
-console.log(initData); // Здесь будут tg_id, first_name и т.д.
+ready();  // Telegram WebApp готов
+console.log(initDataUnsafe); // Telegram user info
 
 function App() {
   return (
