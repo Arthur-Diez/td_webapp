@@ -42,7 +42,25 @@ body, html {
   font-weight: bold;
 }
 
+/* Навигационная панель */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #2a2a2a;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+}
 
+.nav-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
 
 
 

@@ -5,23 +5,29 @@ import Calendar from "./components/Calendar";
 import Profile from "./components/Profile";
 import Tabs from "./components/Tabs";
 import "./App.css";
+import Drawer from './components/Drawer';
 
 function App() {
-  const [tab, setTab] = useState("tasks");
-
-  useEffect(() => {
-    WebApp.ready();
-    console.log(WebApp.initDataUnsafe); // Telegram user info
-  }, []);
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <div className="App">
-      <div className="main">
-        {tab === "tasks" && <Tasks />}
-        {tab === "calendar" && <Calendar />}
-        {tab === "profile" && <Profile />}
+      {/* Шторка */}
+      <Drawer isOpen={isDrawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      {/* Основной интерфейс */}
+      <div className="main-content">
+        {/* ...всё, что было... */}
       </div>
-      <Tabs current={tab} onChange={setTab} />
+
+      {/* Нижнее меню */}
+      <div className="bottom-nav">
+        <button className="nav-button" onClick={() => setDrawerOpen(true)}>☰</button>
+        {/* Остальные кнопки */}
+        <button className="nav-button">Задачи</button>
+        <button className="nav-button">Календарь</button>
+        <button className="nav-button">Моё</button>
+      </div>
     </div>
   );
 }
