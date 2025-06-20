@@ -1,19 +1,17 @@
-import React from "react";
-import "./Tabs.css";
+import React from 'react';
+import './Tabs.css';
 
-function Tabs({ current, onChange }) {
+function Tabs({ onMenuClick }) {
   return (
-    <div className="tabs">
-      <button className={current === "tasks" ? "active" : ""} onClick={() => onChange("tasks")}>
-        📋<br />Задачи
-      </button>
-      <button className={current === "calendar" ? "active" : ""} onClick={() => onChange("calendar")}>
-        📅<br />Календарь
-      </button>
-      <button className={current === "profile" ? "active" : ""} onClick={() => onChange("profile")}>
-        👤<br />Моё
-      </button>
-    </div>
+    <nav className="tabs">
+      {/* Бургер слева */}
+      <button className="tab-btn burger" onClick={onMenuClick}>☰</button>
+
+      {/* Остальные вкладки */}
+      <button className="tab-btn">Задачи</button>
+      <button className="tab-btn">Календарь</button>
+      <button className="tab-btn">Моё</button>
+    </nav>
   );
 }
 

@@ -1,30 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './Drawer.css';
 
-function DrawerToggleWrapper() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleDrawer = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const closeDrawer = () => {
-    setIsOpen(false);
-  };
-
+/**
+ * Шторка теперь не умеет сама себя открывать — за это отвечает родитель
+ */
+function Drawer({ isOpen, onClose }) {
   return (
-    <>
-      <button className="drawer-toggle" onClick={toggleDrawer}>☰</button>
-      <div className={`drawer ${isOpen ? 'open' : ''}`}>
-        <button className="drawer-close" onClick={closeDrawer}>×</button>
-        <ul className="drawer-menu">
-          <li>Настройки</li>
-          <li>О приложении</li>
-          <li>Поддержка</li>
-        </ul>
-      </div>
-    </>
+    <aside className={`drawer ${isOpen ? 'open' : ''}`}>
+      <button className="drawer-close" onClick={onClose}>×</button>
+
+      <ul className="drawer-menu">
+        <li>Настройки</li>
+        <li>О приложении</li>
+        <li>Поддержка</li>
+      </ul>
+    </aside>
   );
 }
 
-export default DrawerToggleWrapper;
+export default Drawer;
