@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
-import { ready, initDataUnsafe } from '@telegram-apps/sdk';
-
-ready();  // Telegram WebApp готов
-console.log(initDataUnsafe); // Telegram user info
 
 function App() {
+  useEffect(() => {
+    const tg = window.Telegram.WebApp;
+    tg.ready();  // Говорим Telegram, что мы готовы
+    console.log(tg.initDataUnsafe);  // Выведет ID пользователя, имя и т.д.
+  }, []);
+
   return (
     <div className="App">
       <h1>📝 Планнер задач</h1>
