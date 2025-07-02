@@ -1,44 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 
-import Tasks    from './components/Tasks';
-import Calendar from './components/Calendar';
-import Profile  from './components/Profile';
-import Drawer   from './components/Drawer';
-import Tabs     from './components/Tabs';
+import Tasks     from './components/Tasks';
+import Calendar  from './components/Calendar';
+import Profile   from './components/Profile';
+import Drawer    from './components/Drawer';
+import Tabs      from './components/Tabs';
 
 import './App.css';
 
 export default function App() {
-  /* --- Telegram mini-app init --- */
+  /* подготовка Telegram-WebApp */
   useEffect(() => {
     WebApp.ready();
   }, []);
 
-  /* --- локальные состояния --- */
-  const [activeTab,   setActiveTab]   = useState('tasks'); // 'tasks' | 'calendar' | 'profile'
-  const [drawerOpen,  setDrawerOpen]  = useState(false);   // шторка слева
+  /* состояние UI */
+  const [activeTab,  setActiveTab] = useState('tasks');   // текущая вкладка
+  const [drawerOpen, setDrawerOpen] = useState(false);    // боковая шторка
 
-  /* --- отрисовываем центральный контент --- */
+  /* контент по вкладке */
   const renderContent = () => {
     switch (activeTab) {
       case 'calendar': return <Calendar />;
-      case 'profile':  return <Profile />;
-      default:         return <Tasks />;
+      case 'profile':  return <Profile  />;
+      default:         return <Tasks    />;
     }
   };
 
   return (
     <div className="App">
-      {/* левая выдвижная шторка */}
+      {/* левая шторка */}
       <Drawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
-      {/* основная область */}
+      {/* центр */}
       <main className="main-content">
         {renderContent()}
       </main>
 
-      {/* нижняя панель навигации (с бургером) */}
+      {/* нижняя навигация */}
       <Tabs
         current={activeTab}
         onSelect={setActiveTab}
@@ -47,7 +47,6 @@ export default function App() {
     </div>
   );
 }
-
 
 
 

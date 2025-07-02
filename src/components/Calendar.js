@@ -1,4 +1,8 @@
-// Example: Tasks.js
-export default function Tasks() {
-  return <h2>Мои задачи появятся здесь!</h2>;
+export default function Calendar() {
+  return (
+    <section style={{ padding: 32, textAlign: 'center' }}>
+      <h2>🗓️ Календарь</h2>
+      <p>Календарный вид задач будет реализован в следующих релизах.</p>
+    </section>
+  );
 }

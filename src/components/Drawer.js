@@ -2,19 +2,29 @@ import React from 'react';
 import './Drawer.css';
 
 /**
- * Шторка теперь не умеет сама себя открывать — за это отвечает родитель
+ * Левая выдвижная шторка.
+ * isOpen        – показывать/скрывать
+ * onClose()     – колбэк, когда пользователь хочет спрятать
  */
 function Drawer({ isOpen, onClose }) {
   return (
-    <aside className={`drawer ${isOpen ? 'open' : ''}`}>
-      <button className="drawer-close" onClick={onClose}>×</button>
+    <>
+      {/* overlay */}
+      <div
+        className={`drawer-overlay${isOpen ? ' open' : ''}`}
+        onClick={onClose}
+      />
 
-      <ul className="drawer-menu">
-        <li>Настройки</li>
-        <li>О приложении</li>
-        <li>Поддержка</li>
-      </ul>
-    </aside>
+      {/* сама панель */}
+      <aside className={`drawer${isOpen ? ' open' : ''}`}>
+        <button className="drawer-close" onClick={onClose}>×</button>
+        <ul className="drawer-menu">
+          <li>Настройки</li>
+          <li>О приложении</li>
+          <li>Поддержка</li>
+        </ul>
+      </aside>
+    </>
   );
 }
 
