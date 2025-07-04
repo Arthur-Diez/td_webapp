@@ -14,12 +14,15 @@ export default function App() {
   /* подготовка Telegram-WebApp */
   useEffect(() => {
     WebApp.ready();
-    // 1) первый запуск
-    applyTelegramTheme();
 
-    // 2) ловим смену темы в клиенте
-    WebApp.onEvent('themeChanged', applyTelegramTheme);
-    return () => WebApp.offEvent('themeChanged', applyTelegramTheme);
+    const theme = WebApp.themeParams || {};
+    const root = document.documentElement;
+
+    if (theme.bg_color) root.style.setProperty('--tg-bg', theme.bg_color);
+    if (theme.text_color) root.style.setProperty('--tg-fg', theme.text_color);
+    if (theme.button_color) root.style.setProperty('--tg-btn-bg', theme.button_color);
+    if (theme.button_text_color) root.style.setProperty('--tg-btn-fg', theme.button_text_color);
+    if (theme.hint_color) root.style.setProperty('--tg-accent', theme.hint_color);
   }, []);
 
   /* состояние UI */
