@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
+import { applyTelegramTheme } from './utils/Theme';
 
 import Tasks     from './components/Tasks';
 import Calendar  from './components/Calendar';
@@ -13,6 +14,12 @@ export default function App() {
   /* подготовка Telegram-WebApp */
   useEffect(() => {
     WebApp.ready();
+    // 1) первый запуск
+    applyTelegramTheme();
+
+    // 2) ловим смену темы в клиенте
+    WebApp.onEvent('themeChanged', applyTelegramTheme);
+    return () => WebApp.offEvent('themeChanged', applyTelegramTheme);
   }, []);
 
   /* состояние UI */
