@@ -26,6 +26,15 @@ body{
   color:      var(--tg-fg);
   transition: background .25s, color .25s;
 }
+
+body.dark {
+  /* можно изменить тональности, если нужно */
+  --tg-bg: #121212;
+  --tg-fg: #f5f5f5;
+  --tg-btn-bg: #1e1e1e;
+  --tg-btn-fg: #ffffff;
+  --tg-accent: #00aaff;
+}
 /* пример использования переменных в кнопках/панелях */
 .tabs{ background: var(--tg-btn-bg); }
 .tabs button{ color: var(--tg-btn-fg); }

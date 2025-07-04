@@ -2,7 +2,9 @@ body, html {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
-  background: linear-gradient(135deg, #2a2a72, #009ffd);
+  background: var(--tg-bg);
+  color: var(--tg-fg);
+  transition: background 0.3s, color 0.3s;
   height: 100%;
 }
 
@@ -10,7 +12,6 @@ body, html {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  color: white;
 }
 
 .main {
@@ -23,7 +24,7 @@ body, html {
 .tabs {
   display: flex;
   justify-content: space-around;
-  background: #1b1b3a;
+  background: var(--tg-btn-bg);
   padding: 10px;
   border-top: 1px solid #333;
 }
@@ -31,23 +32,22 @@ body, html {
 .tabs button {
   background: none;
   border: none;
-  color: #ccc;
+  color: var(--tg-btn-fg);
   font-size: 14px;
   text-align: center;
   flex: 1;
 }
 
 .tabs button.active {
-  color: #fff;
+  color: var(--tg-accent);
   font-weight: bold;
 }
 
-/* Навигационная панель */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: #2a2a2a;
+  background: var(--tg-btn-bg);
   display: flex;
   justify-content: space-around;
   padding: 10px 0;
@@ -57,13 +57,7 @@ body, html {
 .nav-button {
   background: none;
   border: none;
-  color: white;
+  color: var(--tg-btn-fg);
   font-size: 1.2rem;
   cursor: pointer;
 }
-
-
-
-
-
-
