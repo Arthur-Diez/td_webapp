@@ -1,4 +1,3 @@
-// src/utils/Theme.js
 import WebApp from '@twa-dev/sdk';
 
 export function applyTelegramTheme() {
@@ -14,8 +13,11 @@ export function applyTelegramTheme() {
   };
 
   Object.entries(map).forEach(([key, cssVar]) => {
-    if (tp[key]) doc.style.setProperty(cssVar, tp[key]);
+    if (tp[key]) {
+      doc.style.setProperty(cssVar, tp[key]);
+    }
   });
 
-  document.body.classList.toggle('dark', WebApp.isDarkTheme);
+  // ✅ Принудительно переключаем класс dark в зависимости от isDarkTheme
+  document.body.classList.toggle('dark', WebApp.isDarkTheme === true);
 }

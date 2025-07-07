@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-around;
   padding: 10px 16px;
-  background: var(--tg-bg);;
+  background: var(--tg-btn-bg);
   border-radius: 20px 20px 0 0;
   margin-top: 10px;
 }
@@ -16,17 +16,17 @@
 
 .day-name {
   font-size: 14px;
-  color: #666;
+  color: var(--tg-fg);
 }
 
 .day-number {
   font-size: 16px;
   margin-top: 4px;
-  color: #000;
+  color: var(--tg-fg);
 }
 
 .day-number.today {
-  background: #ee6c6c;
+  background: var(--tg-accent);
   color: white;
   padding: 6px 10px;
   border-radius: 20px;
