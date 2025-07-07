@@ -1,59 +1,32 @@
-import React, { useState, useEffect } from 'react';
+// src/App.js
+import React, { useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
-import { applyTelegramTheme } from './utils/Theme';
 
-import Tasks     from './components/Tasks';
-import Calendar  from './components/Calendar';
-import Profile   from './components/Profile';
-import Drawer    from './components/Drawer';
-import Tabs      from './components/Tabs';
+import CalendarHeader   from './components/CalendarHeader';
+import WeekStrip        from './components/WeekStrip';
+import FloatingButtons  from './components/FloatingButtons';
+import { applyTelegramTheme } from './utils/Theme';
 
 import './App.css';
 
 export default function App() {
-  /* подготовка Telegram-WebApp */
+  /* инициализация Telegram Web App + применение цветов темы */
   useEffect(() => {
     WebApp.ready();
-
-    const theme = WebApp.themeParams || {};
-    const root = document.documentElement;
-
-    if (theme.bg_color) root.style.setProperty('--tg-bg', theme.bg_color);
-    if (theme.text_color) root.style.setProperty('--tg-fg', theme.text_color);
-    if (theme.button_color) root.style.setProperty('--tg-btn-bg', theme.button_color);
-    if (theme.button_text_color) root.style.setProperty('--tg-btn-fg', theme.button_text_color);
-    if (theme.hint_color) root.style.setProperty('--tg-accent', theme.hint_color);
+    applyTelegramTheme();
+    WebApp.onEvent('themeChanged', applyTelegramTheme);
+    return () => WebApp.offEvent('themeChanged', applyTelegramTheme);
   }, []);
-
-  /* состояние UI */
-  const [activeTab,  setActiveTab] = useState('tasks');   // текущая вкладка
-  const [drawerOpen, setDrawerOpen] = useState(false);    // боковая шторка
-
-  /* контент по вкладке */
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'calendar': return <Calendar />;
-      case 'profile':  return <Profile  />;
-      default:         return <Tasks    />;
-    }
-  };
 
   return (
     <div className="App">
-      {/* левая шторка */}
-      <Drawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <CalendarHeader />   {/* «июля 2025» + иконки справа */}
+      <WeekStrip />        {/* 7-дневная полоса */}
+      
+      {/* место под задачи/календарь на день — пока просто пустой контейнер */}
+      <main className="main-content" />
 
-      {/* центр */}
-      <main className="main-content">
-        {renderContent()}
-      </main>
-
-      {/* нижняя навигация */}
-      <Tabs
-        current={activeTab}
-        onSelect={setActiveTab}
-        onMenuClick={() => setDrawerOpen(true)}
-      />
+      <FloatingButtons />  {/* «+», аватар иконка группы — уже внутри компонента */}
     </div>
   );
 }
