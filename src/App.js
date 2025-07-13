@@ -12,25 +12,28 @@ import './App.css';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [debugText, setDebugText] = useState("⏳ Инициализация...");
 
   useEffect(() => {
     WebApp.ready();
     applyTelegramTheme();
     WebApp.onEvent('themeChanged', applyTelegramTheme);
 
-    console.log("[App.js] initDataUnsafe:", WebApp.initDataUnsafe);
-
     async function initDate() {
       try {
         const offsetMin = await fetchUserTimezoneOffset();
-        console.log("[App.js] Запуск fetchUserTimezoneOffset()");
         const nowUTC = new Date();
         const localTime = new Date(nowUTC.getTime() + offsetMin * 60000);
-        console.log("[App.js] Local time with offset:", localTime.toString());
         setCurrentDate(localTime);
+
+        setDebugText(
+          `✅ Смещение: ${offsetMin} мин\n` +
+          `📅 Локальное время: ${localTime.toLocaleString()}`
+        );
       } catch (err) {
         console.error('⛔ Ошибка получения смещения:', err);
-        setCurrentDate(new Date()); // fallback
+        setDebugText("❌ Ошибка получения смещения");
+        setCurrentDate(new Date());
       }
     }
 
@@ -42,12 +45,24 @@ export default function App() {
     <div className="App">
       <CalendarHeader date={currentDate} />
       <WeekStrip date={currentDate} />
-      <main className="main-content" />
+      <main className="main-content">
+        {/* 👇 debug-панель */}
+        <pre style={{
+          fontSize: '12px',
+          color: 'gray',
+          whiteSpace: 'pre-wrap',
+          marginTop: '20px',
+          background: '#eee',
+          padding: '10px',
+          borderRadius: '8px',
+        }}>
+          {debugText}
+        </pre>
+      </main>
       <FloatingButtons />
     </div>
   );
 }
-
 
 
 
