@@ -1,19 +1,19 @@
-// CalendarHeader.js
-import React from 'react';
-import './CalendarHeader.css';
+// src/components/CalendarHeader.js
+import React from "react";
+import "./CalendarHeader.css";
 
-export default function CalendarHeader() {
+export default function CalendarHeader({ date }) {
+  const monthName = date.toLocaleString("ru-RU", { month: "long" });
+  const year = date.getFullYear();
+
   return (
-    <div className="calendar-header">
-      <div className="header-left">
-        <span className="month">июля</span>
-        <span className="year">2025</span>
+    <header className="calendar-header">
+      <h1>
+        <b>{monthName}</b> {year}
+      </h1>
+      <div className="icons">
+        📅 🖼️ ⚙️
       </div>
-      <div className="header-right">
-        <button>🗓️</button>
-        <button>🖼️</button>
-        <button>⚙️</button>
-      </div>
-    </div>
+    </header>
   );
 }

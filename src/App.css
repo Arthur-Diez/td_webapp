@@ -6,46 +6,42 @@ body, html {
   color: var(--tg-fg);
   transition: background 0.3s, color 0.3s;
   height: 100%;
+  overflow: hidden;
 }
 
 .App {
   display: flex;
   flex-direction: column;
   height: 100vh;
-}
-
-.main {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: var(--tg-btn-bg);
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-}
-
-.nav-button {
-  background: none;
-  border: none;
-  color: var(--tg-btn-fg);
-  font-size: 1.2rem;
-  cursor: pointer;
+  overflow: hidden;
 }
 
 .main-content {
+  flex: 1;
   background: var(--tg-bg);
   color: var(--tg-fg);
   padding: 20px;
+  margin-top: 10px;
   border-radius: 30px 30px 0 0;
-  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-  flex: 1;
+  box-shadow: 0px -2px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+/* Кнопка "+" */
+.fab-button {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--tg-accent);
+  color: white;
+  font-size: 32px;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }

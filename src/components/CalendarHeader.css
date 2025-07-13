@@ -2,27 +2,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-}
-
-.header-left {
+  padding: 16px 20px 4px 20px;
   font-size: 24px;
-  font-weight: bold;
 }
 
-.month {
-  color: #000;
-}
-
-.year {
-  color: #ee6c6c;
-  margin-left: 8px;
-}
-
-.header-right button {
-  background: none;
-  border: none;
-  font-size: 22px;
-  margin-left: 12px;
-  cursor: pointer;
+.icons {
+  font-size: 20px;
+  display: flex;
+  gap: 10px;
 }
