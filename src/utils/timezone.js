@@ -1,5 +1,7 @@
 /// src/utils/timezone.js
 export async function fetchUserTimezoneOffset() {
+  console.log("[timezone.js] Старт функции");
+
   try {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
     const userId = user?.id;
@@ -15,6 +17,6 @@ export async function fetchUserTimezoneOffset() {
     return data.offset_min;
   } catch (err) {
     console.error("[timezone.js] Ошибка запроса смещения:", err);
-    return 180; // fallback: +3 (в минутах)
+    return 180;
   }
 }

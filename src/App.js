@@ -23,6 +23,7 @@ export default function App() {
     async function initDate() {
       try {
         const offsetMin = await fetchUserTimezoneOffset();
+        console.log("[App.js] Запуск fetchUserTimezoneOffset()");
         const nowUTC = new Date();
         const localTime = new Date(nowUTC.getTime() + offsetMin * 60000);
         console.log("[App.js] Local time with offset:", localTime.toString());
