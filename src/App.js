@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import WebApp from '@twa-dev/sdk';
 
-import CalendarHeader   from './components/CalendarHeader';
-import WeekStrip        from './components/WeekStrip';
-import FloatingButtons  from './components/FloatingButtons';
+import CalendarHeader from './components/CalendarHeader';
+import WeekStrip from './components/WeekStrip';
+import FloatingButtons from './components/FloatingButtons';
 import { applyTelegramTheme } from './utils/Theme';
 import { fetchUserTimezoneOffset } from './utils/timezone';
 
@@ -18,12 +18,19 @@ export default function App() {
     applyTelegramTheme();
     WebApp.onEvent('themeChanged', applyTelegramTheme);
 
-    fetchUserTimezoneOffset().then(offsetMin => {
-      const nowUTC = new Date();
-      const localTime = new Date(nowUTC.getTime() + offsetMin * 60 * 1000);
-      setCurrentDate(localTime);
-    });
+    async function initDate() {
+      try {
+        const offsetMin = await fetchUserTimezoneOffset();
+        const nowUTC = new Date();
+        const localTime = new Date(nowUTC.getTime() + offsetMin * 60000);
+        setCurrentDate(localTime);
+      } catch (err) {
+        console.error('⛔ Ошибка получения смещения:', err);
+        setCurrentDate(new Date()); // fallback
+      }
+    }
 
+    initDate();
     return () => WebApp.offEvent('themeChanged', applyTelegramTheme);
   }, []);
 
