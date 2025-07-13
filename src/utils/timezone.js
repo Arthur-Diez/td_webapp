@@ -1,13 +1,20 @@
-// src/utils/timezone.js
+/// src/utils/timezone.js
 export async function fetchUserTimezoneOffset() {
-  const initData = window.Telegram.WebApp.initDataUnsafe;
-  const userId = initData.user?.id;
+  try {
+    const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const userId = user?.id;
 
-  if (!userId) throw new Error("Пользователь не найден в initData");
+    console.log("[timezone.js] Telegram User ID:", userId);
 
-  const response = await fetch(`https://<https://td-webapp.onrender.com>/api/timezone?telegram_id=${userId}`);
-  if (!response.ok) throw new Error("Ошибка при получении часового пояса");
+    if (!userId) throw new Error("User ID not found in initDataUnsafe");
 
-  const json = await response.json();
-  return json.offset_min;
+    const res = await fetch(`https://<https://td-webapp.onrender.com>/api/timezone?uid=${userId}`);
+    const data = await res.json();
+
+    console.log("[timezone.js] API ответ:", data);
+    return data.offset_min;
+  } catch (err) {
+    console.error("[timezone.js] Ошибка запроса смещения:", err);
+    return 180; // fallback: +3 (в минутах)
+  }
 }

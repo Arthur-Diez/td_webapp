@@ -18,11 +18,14 @@ export default function App() {
     applyTelegramTheme();
     WebApp.onEvent('themeChanged', applyTelegramTheme);
 
+    console.log("[App.js] initDataUnsafe:", WebApp.initDataUnsafe);
+
     async function initDate() {
       try {
         const offsetMin = await fetchUserTimezoneOffset();
         const nowUTC = new Date();
         const localTime = new Date(nowUTC.getTime() + offsetMin * 60000);
+        console.log("[App.js] Local time with offset:", localTime.toString());
         setCurrentDate(localTime);
       } catch (err) {
         console.error('⛔ Ошибка получения смещения:', err);
