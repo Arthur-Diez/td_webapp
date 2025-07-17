@@ -88,3 +88,17 @@ body, html {
   margin-top: 20px;
   flex: 1;
 }
+
+.day-cell {
+  cursor: pointer;
+}
+
+.day-number.selected {
+  background: var(--tg-accent);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 50%;
+  font-weight: bold;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}

@@ -18,6 +18,7 @@ export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [debugText, setDebugText] = useState("⏳ Инициализация...");
   const [activeTab, setActiveTab] = useState("tasks");
+  const [selectedDate, setSelectedDate] = useState(currentDate);
 
   useEffect(() => {
     WebApp.ready();
@@ -36,6 +37,7 @@ export default function App() {
       const localTime = new Date(utcTimestamp + offsetMin * 60000);
 
       setCurrentDate(localTime);
+      setSelectedDate(localTime);
 
       setDebugText(
         `✅ Смещение: ${offsetMin} мин\n` +
@@ -56,7 +58,7 @@ export default function App() {
   return (
     <div className="App">
       <CalendarHeader date={currentDate} onTabChange={setActiveTab} />
-      <WeekStrip date={currentDate} />
+      <WeekStrip date={selectedDate} onDateSelect={setSelectedDate} />
       <main className="main-content">
         {activeTab === "tasks" && <Tasks />}
         {activeTab === "calendar" && <Calendar />}

@@ -2,7 +2,7 @@
 import React from "react";
 import "./WeekStrip.css";
 
-export default function WeekStrip({ date }) {
+export default function WeekStrip({ date, onDateSelect }) {
   const currentDate = new Date(date);
   const dayOfWeek = currentDate.getDay(); // 0 = воскресенье
   const diff = (dayOfWeek + 6) % 7; // смещение к понедельнику
@@ -17,19 +17,23 @@ export default function WeekStrip({ date }) {
     return d;
   });
 
-  const isToday = (d) =>
-    d.toDateString() === new Date().toDateString();
-
   return (
     <div className="week-strip">
-      {days.map((d, index) => (
-        <div className="day-cell" key={index}>
-          <span className="day-name">{weekDays[index]}</span>
-          <span className={`day-number ${isToday(d) ? "today" : ""}`}>
-            {d.getDate()}
-          </span>
-        </div>
-      ))}
+      {days.map((d, index) => {
+        const isSelected = d.toDateString() === date.toDateString();
+        return (
+          <div
+            className="day-cell"
+            key={index}
+            onClick={() => onDateSelect(d)}
+          >
+            <span className="day-name">{weekDays[index]}</span>
+            <span className={`day-number ${isSelected ? "selected" : ""}`}>
+              {d.getDate()}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
