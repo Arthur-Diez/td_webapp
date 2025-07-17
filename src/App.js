@@ -20,24 +20,29 @@ export default function App() {
     WebApp.onEvent('themeChanged', applyTelegramTheme);
 
     async function initDate() {
-      try {
-        const offsetMin = await fetchUserTimezoneOffset();
-        const utcTimestamp = Date.now(); // ← UTC в миллисекундах
-        const nowUTC = new Date(utcTimestamp); // ✅ ПРАВИЛЬНО: UTC
-        const localTime = new Date(utcTimestamp + offsetMin * 60000);
-        setCurrentDate(localTime);
+    try {
+      const offsetMin = await fetchUserTimezoneOffset();
 
-        setDebugText(
-          `✅ Смещение: ${offsetMin} мин\n` +
-          `🌐 UTC: ${nowUTC.toISOString()}\n` +
-          `📅 Локальное время: ${localTime.toLocaleString()}`
-        );
-      } catch (err) {
-        console.error('⛔ Ошибка получения смещения:', err);
-        setDebugText("❌ Ошибка получения смещения");
-        setCurrentDate(new Date());
-      }
+      // Получаем UTC-время в миллисекундах независимо от локали
+      const now = new Date();
+      const utcTimestamp = now.getTime() + now.getTimezoneOffset() * 60000;
+
+      const nowUTC = new Date(utcTimestamp);
+      const localTime = new Date(utcTimestamp + offsetMin * 60000);
+
+      setCurrentDate(localTime);
+
+      setDebugText(
+        `✅ Смещение: ${offsetMin} мин\n` +
+        `🌐 UTC: ${nowUTC.toISOString()}\n` +
+        `📅 Локальное время: ${localTime.toLocaleString()}`
+      );
+    } catch (err) {
+      console.error('⛔ Ошибка получения смещения:', err);
+      setDebugText("❌ Ошибка получения смещения");
+      setCurrentDate(new Date());
     }
+  }
 
     initDate();
     return () => WebApp.offEvent('themeChanged', applyTelegramTheme);
