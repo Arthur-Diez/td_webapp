@@ -8,11 +8,14 @@ export default function CalendarHeader({ date }) {
 
   return (
     <header className="calendar-header">
-      <h1>
-        <b>{monthName}</b> {year}
-      </h1>
-      <div className="icons">
-        📅 🖼️ ⚙️
+      <div className="calendar-title">
+        <b className="month">{monthName}</b>
+        <span className="year">{year}</span>
+      </div>
+      <div className="calendar-icons">
+        <span className="icon">📅</span>
+        <span className="icon">🖼️</span>
+        <span className="icon">⚙️</span>
       </div>
     </header>
   );
