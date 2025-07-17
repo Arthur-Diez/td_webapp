@@ -23,7 +23,8 @@ export default function App() {
       try {
         const offsetMin = await fetchUserTimezoneOffset();
         const nowUTC = new Date();
-        const localTime = new Date(nowUTC.getTime() + offsetMin * 60000);
+        const utcTimestamp = Date.now(); // ← UTC в миллисекундах
+        const localTime = new Date(utcTimestamp + offsetMin * 60000);
         setCurrentDate(localTime);
 
         setDebugText(
