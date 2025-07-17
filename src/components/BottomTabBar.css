@@ -1,0 +1,30 @@
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--tg-btn-bg);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid var(--tg-border);
+  z-index: 900;
+}
+
+.bottom-tab-bar button {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--tg-fg);
+  opacity: 0.6;
+  transition: 0.2s;
+}
+
+.bottom-tab-bar button.active {
+  opacity: 1;
+  color: var(--tg-accent);
+}
+
+.bottom-tab-bar button:focus {
+  outline: none;
+}

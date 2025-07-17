@@ -7,12 +7,17 @@ import WeekStrip from './components/WeekStrip';
 import FloatingButtons from './components/FloatingButtons';
 import { applyTelegramTheme } from './utils/Theme';
 import { fetchUserTimezoneOffset } from './utils/timezone';
+import Tasks from './components/Tasks';
+import Calendar from './components/Calendar';
+import Profile from './components/Profile';
+import BottomTabBar from './components/BottomTabBar';
 
 import './App.css';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [debugText, setDebugText] = useState("⏳ Инициализация...");
+  const [activeTab, setActiveTab] = useState("tasks");
 
   useEffect(() => {
     WebApp.ready();
@@ -53,8 +58,12 @@ export default function App() {
       <CalendarHeader date={currentDate} />
       <WeekStrip date={currentDate} />
       <main className="main-content">
-        {/* Здесь появятся задачи или другой контент */}
+        {activeTab === "tasks" && <Tasks />}
+        {activeTab === "calendar" && <Calendar />}
+        {activeTab === "profile" && <Profile />}
       </main>
+
+      <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
       <FloatingButtons />
     </div>
   );
