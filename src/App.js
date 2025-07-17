@@ -28,6 +28,7 @@ export default function App() {
 
         setDebugText(
           `✅ Смещение: ${offsetMin} мин\n` +
+          `🌐 UTC: ${nowUTC.toISOString()}\n` +
           `📅 Локальное время: ${localTime.toLocaleString()}`
         );
       } catch (err) {
