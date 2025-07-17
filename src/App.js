@@ -22,8 +22,8 @@ export default function App() {
     async function initDate() {
       try {
         const offsetMin = await fetchUserTimezoneOffset();
-        const nowUTC = new Date();
         const utcTimestamp = Date.now(); // ← UTC в миллисекундах
+        const nowUTC = new Date();
         const localTime = new Date(utcTimestamp + offsetMin * 60000);
         setCurrentDate(localTime);
 
