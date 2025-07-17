@@ -18,6 +18,8 @@ code {
   --tg-accent: #0088cc;
   --tg-btn-bg: #eeeeee;
   --tg-btn-fg: #000000;
+  --tg-muted: #999999;
+  --tg-border: #dddddd;
 }
 
 body{
@@ -30,7 +32,9 @@ body{
 body.dark {
   --tg-bg: #1e1e1e;
   --tg-fg: #ffffff;
+  --tg-accent: #ff728e;
   --tg-btn-bg: #2b2b2b;
   --tg-btn-fg: #ffffff;
-  --tg-accent: #ff728e;
+  --tg-muted: #888888;
+  --tg-border: #333333;
 }
