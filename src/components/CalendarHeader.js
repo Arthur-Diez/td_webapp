@@ -2,7 +2,7 @@
 import React from "react";
 import "./CalendarHeader.css";
 
-export default function CalendarHeader({ date }) {
+export default function CalendarHeader({ date, onTabChange }) {
   const monthName = date.toLocaleString("ru-RU", { month: "long" });
   const year = date.getFullYear();
 
@@ -13,9 +13,9 @@ export default function CalendarHeader({ date }) {
         <span className="year">{year}</span>
       </div>
       <div className="calendar-icons">
-        <span className="icon">📅</span>
-        <span className="icon">🖼️</span>
-        <span className="icon">⚙️</span>
+        <button className="icon-btn" onClick={() => onTabChange("calendar")}>📅</button>
+        <button className="icon-btn" onClick={() => onTabChange("profile")}>🖼️</button>
+        <button className="icon-btn" onClick={() => onTabChange("settings")}>⚙️</button>
       </div>
     </header>
   );

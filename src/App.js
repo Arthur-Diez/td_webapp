@@ -10,7 +10,7 @@ import { fetchUserTimezoneOffset } from './utils/timezone';
 import Tasks from './components/Tasks';
 import Calendar from './components/Calendar';
 import Profile from './components/Profile';
-import BottomTabBar from './components/BottomTabBar';
+
 
 import './App.css';
 
@@ -55,15 +55,19 @@ export default function App() {
 
   return (
     <div className="App">
-      <CalendarHeader date={currentDate} />
+      <CalendarHeader date={currentDate} onTabChange={setActiveTab} />
       <WeekStrip date={currentDate} />
       <main className="main-content">
         {activeTab === "tasks" && <Tasks />}
         {activeTab === "calendar" && <Calendar />}
         {activeTab === "profile" && <Profile />}
+        {activeTab === "settings" && (
+          <p style={{ textAlign: 'center', marginTop: 40 }}>
+            🛠 Раздел настроек будет позже
+          </p>
+        )}
       </main>
 
-      <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
       <FloatingButtons />
     </div>
   );
