@@ -53,18 +53,7 @@ export default function App() {
       <CalendarHeader date={currentDate} />
       <WeekStrip date={currentDate} />
       <main className="main-content">
-        {/* 👇 debug-панель */}
-        <pre style={{
-          fontSize: '12px',
-          color: 'gray',
-          whiteSpace: 'pre-wrap',
-          marginTop: '20px',
-          background: '#eee',
-          padding: '10px',
-          borderRadius: '8px',
-        }}>
-          {debugText}
-        </pre>
+        {/* Здесь появятся задачи или другой контент */}
       </main>
       <FloatingButtons />
     </div>
