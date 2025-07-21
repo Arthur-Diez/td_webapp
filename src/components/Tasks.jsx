@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TaskCard from './TaskCard';
 
-export default function Tasks({ date, uid }) {
+export default function Tasks({ date, uid, setConsoleData }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,8 +15,12 @@ export default function Tasks({ date, uid }) {
       console.log("📡 Запрашиваем задачи:", { uid, date });
       try {
         setLoading(true);
-        const res = await fetch(`https://td-webapp.onrender.com/api/tasks?uid=${uid}&date=${date}`);
+        const url = `https://td-webapp.onrender.com/api/tasks?uid=${uid}&date=${date}`;
+        setConsoleData(prev => prev + `\n📡 Fetching: ${url}`);
+        const res = await fetch(url);
         const data = await res.json();
+
+        setConsoleData(prev => prev + `\n📦 Response: ${JSON.stringify(data, null, 2)}`);
 
         if (!data.error) {
           console.log("✅ Задачи получены:", data);

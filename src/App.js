@@ -21,6 +21,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("tasks");
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [userId, setUserId] = useState(null);
+  
+  setConsoleData(
+    `🧩 Debug:
+  Telegram ID: ${tgId}
+  UUID: ${uuid}
+  Дата: ${localTime.toISOString().split("T")[0]}
+  `
+  );
 
   useEffect(() => {
     WebApp.ready();
@@ -73,6 +81,7 @@ export default function App() {
           <Tasks
             date={selectedDate.toISOString().split('T')[0]}
             uid={userId}
+            setConsoleData={setConsoleData}
           />
         )}
         {activeTab === "calendar" && <Calendar />}
@@ -82,6 +91,18 @@ export default function App() {
             🛠 Раздел настроек будет позже
           </p>
         )}
+         <pre style={{
+          background: "#f0f0f0",
+          color: "#333",
+          fontSize: "12px",
+          padding: "12px",
+          margin: "12px auto",
+          maxWidth: "90%",
+          borderRadius: "8px",
+          whiteSpace: "pre-wrap"
+        }}>
+          {consoleData}
+        </pre>
       </main>
 
       <FloatingButtons />
