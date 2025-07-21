@@ -18,18 +18,11 @@ import './App.css';
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [debugText, setDebugText] = useState("⏳ Инициализация...");
+  const [consoleData, setConsoleData] = useState("🧾 Консоль запущена...");
   const [activeTab, setActiveTab] = useState("tasks");
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [userId, setUserId] = useState(null);
   
-  setConsoleData(
-    `🧩 Debug:
-  Telegram ID: ${tgId}
-  UUID: ${uuid}
-  Дата: ${localTime.toISOString().split("T")[0]}
-  `
-  );
-
   useEffect(() => {
     WebApp.ready();
     applyTelegramTheme();
@@ -51,6 +44,14 @@ export default function App() {
         console.log("🧩 Полученный UUID:", uuid);
 
         setUserId(uuid);                                     // сохраняем
+
+        setConsoleData(
+          `🧩 Debug:
+        Telegram ID: ${tgId}
+        UUID: ${uuid}
+        Дата: ${localTime.toISOString().split("T")[0]}
+        `
+        );
 
         setCurrentDate(localTime);
         setSelectedDate(localTime);
