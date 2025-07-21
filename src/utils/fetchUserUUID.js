@@ -1,9 +1,7 @@
 // src/utils/fetchUserUUID.js
 export async function fetchUserUUID(tgId) {
   try {
-    const res = await fetch(
-      `https://td-webapp.onrender.com/user_id?tg_id=${Number(tgId)}`
-    );
+    const res = await fetch(`https://td-webapp.onrender.com/api/user_id?tg_id=${Number(tgId)}`);
     const data = await res.json();
     if (data.id) {
       return data.id;
