@@ -88,7 +88,12 @@ export default function App() {
       <WeekStrip date={selectedDate} onDateSelect={setSelectedDate} />
 
       <main className="main-content">
-        {activeTab === "tasks" && <Tasks date={selectedDate} tasks={mockTasks} />}
+        {activeTab === "tasks" && (
+          <Tasks
+            date={selectedDate.toISOString().split('T')[0]}
+            uid={WebApp.initDataUnsafe?.user?.id}
+          />
+        )}
         {activeTab === "calendar" && <Calendar />}
         {activeTab === "profile" && <Profile />}
         {activeTab === "settings" && (

@@ -28,3 +28,9 @@
   font-size: 14px;
   color: #444;
 }
+
+.task-card.expired {
+  background: #ffe5e5;
+  border-left: 6px solid red;
+  opacity: 0.8;
+}
