@@ -30,28 +30,37 @@ export default function App() {
 
     async function initDate() {
       try {
+        setConsoleData(prev => prev + "\n🚀 initDate запущен");
+
         const offsetMin = await fetchUserTimezoneOffset();
+        setConsoleData(prev => prev + `\n🕒 Смещение: ${offsetMin} мин`);
 
         const now = new Date();
         const utcTimestamp = now.getTime() + now.getTimezoneOffset() * 60000;
         const nowUTC = new Date(utcTimestamp);
         const localTime = new Date(utcTimestamp + offsetMin * 60000);
 
-        const tgId = WebApp.initDataUnsafe?.user?.id ?? 5773954061; // ← твой Telegram ID
+        const tgId = WebApp.initDataUnsafe?.user?.id;
         console.log("🧩 Telegram ID:", tgId);
+        setConsoleData(prev => prev + `\n🧩 Telegram ID: ${tgId}`);
+
+        if (!tgId) {
+          setConsoleData(prev => prev + "\n⛔ Не удалось получить Telegram ID");
+          setUserId(null);
+          return;
+        }
 
         const uuid = await fetchUserUUID(tgId);
         console.log("🧩 Полученный UUID:", uuid);
+        setConsoleData(prev => prev + `\n🆔 UUID: ${uuid}`);
 
-        setUserId(uuid);                                     // сохраняем
+        if (!uuid) {
+          setConsoleData(prev => prev + "\n❌ UUID не найден, возможно пользователь не зарегистрирован");
+        }
 
-        setConsoleData(
-          `🧩 Debug:
-        Telegram ID: ${tgId}
-        UUID: ${uuid}
-        Дата: ${localTime.toISOString().split("T")[0]}
-        `
-        );
+        setUserId(uuid);
+
+        setConsoleData(prev => prev + `\n📅 Дата: ${localTime.toISOString().split("T")[0]}`);
 
         setCurrentDate(localTime);
         setSelectedDate(localTime);
@@ -62,7 +71,8 @@ export default function App() {
           `📅 Локальное время: ${localTime.toLocaleString()}`
         );
       } catch (err) {
-        console.error('⛔ Ошибка получения смещения:', err);
+        console.error('⛔ Ошибка в initDate:', err);
+        setConsoleData(prev => prev + `\n⛔ Ошибка в initDate: ${err.message}`);
         setDebugText("❌ Ошибка получения смещения");
         setCurrentDate(new Date());
       }
