@@ -36,9 +36,13 @@ export default function App() {
         const nowUTC = new Date(utcTimestamp);
         const localTime = new Date(utcTimestamp + offsetMin * 60000);
 
-        const tgId = WebApp.initDataUnsafe?.user?.id;          // telegram_id
-        const uuid = await fetchUserUUID(tgId);                // получаем uuid
-        setUserId(uuid);                                       // сохраняем
+        const tgId = WebApp.initDataUnsafe?.user?.id ?? 5773954061; // ← твой Telegram ID
+        console.log("🧩 Telegram ID:", tgId);
+
+        const uuid = await fetchUserUUID(tgId);
+        console.log("🧩 Полученный UUID:", uuid);
+
+        setUserId(uuid);                                     // сохраняем
 
         setCurrentDate(localTime);
         setSelectedDate(localTime);
