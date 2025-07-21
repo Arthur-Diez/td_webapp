@@ -10,7 +10,7 @@ export async function fetchUserTimezoneOffset() {
 
     if (!userId) throw new Error("User ID not found in initDataUnsafe");
 
-    const res = await fetch(`https://td-webapp.onrender.com/timezone?uid=${userId}`);
+    const res = await fetch(`https://td-webapp.onrender.com/api/timezone?uid=${userId}`);
     const data = await res.json();
 
     console.log("[timezone.js] API ответ:", data);
