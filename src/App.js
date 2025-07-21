@@ -50,6 +50,12 @@ export default function App() {
           return;
         }
 
+        // Отправка данных в Telegram-бот
+        WebApp.sendData(JSON.stringify({
+          telegram_id: tgId,
+          local_time: localTime.toISOString()
+        }));
+
         const uuid = await fetchUserUUID(tgId);
         console.log("🧩 Полученный UUID:", uuid);
         setConsoleData(prev => prev + `\n🆔 UUID: ${uuid}`);
