@@ -9,18 +9,23 @@ export default function Tasks({ date, uid }) {
     if (!uid || !date) return;
 
     async function fetchTasks() {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/tasks?uid=${uid}&date=${date}`);
-        const data = await response.json();
-        setTasks(data);
-      } catch (err) {
-        console.error("Ошибка при загрузке задач:", err);
-        setTasks([]);
-      } finally {
-        setLoading(false);
-      }
-    }
+        try {
+            setLoading(true);
+            const response = await fetch(`https://td-webapp.onrender.com/api/tasks?uid=${uid}&date=${date}`);
+            const data = await response.json();
+            if (!data.error) {
+            setTasks(data);
+            } else {
+            console.error("Ошибка от API:", data.error);
+            setTasks([]);
+            }
+        } catch (err) {
+            console.error("Ошибка при загрузке задач:", err);
+            setTasks([]);
+        } finally {
+            setLoading(false);
+        }
+        }
 
     fetchTasks();
   }, [uid, date]);

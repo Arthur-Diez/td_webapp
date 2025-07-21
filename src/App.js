@@ -36,9 +36,9 @@ export default function App() {
         const nowUTC = new Date(utcTimestamp);
         const localTime = new Date(utcTimestamp + offsetMin * 60000);
 
-        const telegramId = WebApp.initDataUnsafe?.user?.id;
-        const uuid = await fetchUserUUID(telegramId);
-        setUserId(uuid);
+        const tgId = WebApp.initDataUnsafe?.user?.id;          // telegram_id
+        const uuid = await fetchUserUUID(tgId);                // получаем uuid
+        setUserId(uuid);                                       // сохраняем
 
         setCurrentDate(localTime);
         setSelectedDate(localTime);
@@ -68,7 +68,7 @@ export default function App() {
         {activeTab === "tasks" && (
           <Tasks
             date={selectedDate.toISOString().split('T')[0]}
-            uid={WebApp.initDataUnsafe?.user?.id || WebApp.initDataUnsafe?.user?.telegram_id}
+            uid={userId}
           />
         )}
         {activeTab === "calendar" && <Calendar />}
