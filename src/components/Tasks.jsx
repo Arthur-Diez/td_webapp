@@ -1,35 +1,42 @@
-// src/components/Tasks.jsx
 import React, { useEffect, useState } from 'react';
+import TaskCard from './TaskCard';
 
 export default function Tasks({ date, uid }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!uid || !date) return;
+    if (!uid || !date) {
+      console.warn("⛔ Нет UID или даты, fetch не выполняется");
+      return;
+    }
 
     async function fetchTasks() {
-        try {
-            setLoading(true);
-            const response = await fetch(`https://td-webapp.onrender.com/api/tasks?uid=${uid}&date=${date}`);
-            const data = await response.json();
-            if (!data.error) {
-            setTasks(data);
-            } else {
-            console.error("Ошибка от API:", data.error);
-            setTasks([]);
-            }
-        } catch (err) {
-            console.error("Ошибка при загрузке задач:", err);
-            setTasks([]);
-        } finally {
-            setLoading(false);
+      console.log("📡 Запрашиваем задачи:", { uid, date });
+      try {
+        setLoading(true);
+        const res = await fetch(`https://td-webapp.onrender.com/api/tasks?uid=${uid}&date=${date}`);
+        const data = await res.json();
+
+        if (!data.error) {
+          console.log("✅ Задачи получены:", data);
+          setTasks(data);
+        } else {
+          console.error("❌ Ошибка от API:", data.error);
+          setTasks([]);
         }
-        }
+      } catch (err) {
+        console.error("❌ Ошибка запроса задач:", err);
+        setTasks([]);
+      } finally {
+        setLoading(false);
+      }
+    }
 
     fetchTasks();
   }, [uid, date]);
 
+  if (!uid) return <p style={{ textAlign: "center" }}>🔒 Не удалось определить пользователя</p>;
   if (loading) return <p style={{ textAlign: "center" }}>⏳ Загружаю задачи...</p>;
   if (tasks.length === 0) return <p style={{ textAlign: "center" }}>📭 Нет задач на этот день</p>;
 
