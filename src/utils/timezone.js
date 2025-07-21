@@ -4,7 +4,7 @@ export async function fetchUserTimezoneOffset() {
 
   try {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    const userId = user?.id;
+    const userId = user?.id ?? 5773954061;
 
     console.log("[timezone.js] Telegram User ID:", userId);
 
