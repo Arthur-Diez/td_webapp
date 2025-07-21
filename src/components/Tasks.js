@@ -3,7 +3,7 @@ import React from "react";
 import TaskCard from "./TaskCard";
 
 export default function Tasks({ date, tasks = [] }) {
-  const formatted = date.toLocaleDateString("ru-RU", {
+  const formatted = new Date(date).toLocaleDateString("ru-RU", {
     day: "numeric",
     month: "long",
     year: "numeric",
