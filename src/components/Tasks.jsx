@@ -15,7 +15,7 @@ export default function Tasks({ date, uid }) {
       console.log("📡 Запрашиваем задачи:", { uid, date });
       try {
         setLoading(true);
-        const res = await fetch(`https://td-webapp.onrender.com/api/tasks?uid=${uid}&date=${date}`);
+        const res = await fetch(`https://td-webapp.onrender.com/tasks?uid=${uid}&date=${date}`);
         const data = await res.json();
 
         if (!data.error) {

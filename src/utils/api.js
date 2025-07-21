@@ -1,6 +1,6 @@
 export async function createTask(taskData) {
   try {
-    const response = await fetch("https://td-webapp.onrender.com/api/add_task", {
+    const response = await fetch("https://td-webapp.onrender.com/add_task", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(taskData),
