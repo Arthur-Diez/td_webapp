@@ -19,6 +19,33 @@ export default function App() {
   const [debugText, setDebugText] = useState("⏳ Инициализация...");
   const [activeTab, setActiveTab] = useState("tasks");
   const [selectedDate, setSelectedDate] = useState(currentDate);
+  const mockTasks = [
+    {
+      id: "1",
+      title: "Встреча с другом",
+      description: "Обсудить проект",
+      start_dt: "2025-07-21T13:00:00+03:00",
+      end_dt: "2025-07-21T14:00:00+03:00",
+      all_day: false,
+      status: "active",
+    },
+    {
+      id: "2",
+      title: "День рождения мамы",
+      description: "",
+      all_day: true,
+      status: "active",
+    },
+    {
+      id: "3",
+      title: "Старая задача",
+      description: "Просрочена",
+      start_dt: "2025-07-19T10:00:00+03:00",
+      end_dt: "2025-07-19T11:00:00+03:00",
+      all_day: false,
+      status: "active",
+    },
+  ];
 
   useEffect(() => {
     WebApp.ready();
@@ -59,8 +86,9 @@ export default function App() {
     <div className="App">
       <CalendarHeader date={currentDate} onTabChange={setActiveTab} />
       <WeekStrip date={selectedDate} onDateSelect={setSelectedDate} />
+
       <main className="main-content">
-        {activeTab === "tasks" && <Tasks />}
+        {activeTab === "tasks" && <Tasks date={selectedDate} tasks={mockTasks} />}
         {activeTab === "calendar" && <Calendar />}
         {activeTab === "profile" && <Profile />}
         {activeTab === "settings" && (

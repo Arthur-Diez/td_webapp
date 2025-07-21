@@ -1,8 +1,25 @@
-export default function Tasks() {
+// src/components/Tasks.js
+import React from "react";
+import TaskCard from "./TaskCard";
+
+export default function Tasks({ date, tasks = [] }) {
+  const formatted = date.toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <section style={{ padding: 32, textAlign: 'center' }}>
-      <h2>📋 Список задач</h2>
-      <p>Здесь появятся ваши задачи. Нажмите «плюс» (чуть позже добавим) чтобы создать первую.</p>
+    <section style={{ padding: 16 }}>
+      <h2 style={{ textAlign: "center" }}>📋 Задачи на {formatted}</h2>
+
+      {tasks.length === 0 ? (
+        <p style={{ textAlign: "center", marginTop: 24 }}>
+          Задач пока нет. Нажмите «плюс», чтобы создать первую.
+        </p>
+      ) : (
+        tasks.map((task) => <TaskCard key={task.id} task={task} />)
+      )}
     </section>
   );
 }
