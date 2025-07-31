@@ -56,7 +56,9 @@ export default function App() {
           local_time: localTime.toISOString()
         }));
 
-        setUserId(tgId);
+        const uuid = await fetchUserUUID(tgId);
+        setConsoleData(prev => prev + `\n🆔 UUID: ${uuid}`);
+        setUserId(uuid);
 
         setConsoleData(prev => prev + `\n📅 Дата: ${localTime.toISOString().split("T")[0]}`);
 
