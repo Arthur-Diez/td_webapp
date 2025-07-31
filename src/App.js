@@ -56,15 +56,7 @@ export default function App() {
           local_time: localTime.toISOString()
         }));
 
-        const uuid = await fetchUserUUID(tgId);
-        console.log("🧩 Полученный UUID:", uuid);
-        setConsoleData(prev => prev + `\n🆔 UUID: ${uuid}`);
-
-        if (!uuid) {
-          setConsoleData(prev => prev + "\n❌ UUID не найден, возможно пользователь не зарегистрирован");
-        }
-
-        setUserId(uuid);
+        setUserId(tgId);
 
         setConsoleData(prev => prev + `\n📅 Дата: ${localTime.toISOString().split("T")[0]}`);
 
