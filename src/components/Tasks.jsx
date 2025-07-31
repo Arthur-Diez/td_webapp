@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import TaskCard from './TaskCard';
 
-export default function Tasks({ date, uid, setConsoleData }) {
+export default function Tasks({ date, telegramId, setConsoleData }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!uid || !date) {
+    if (!telegramId || !date) {
       console.warn("⛔ Нет UID или даты, fetch не выполняется");
       return;
     }
 
     async function fetchTasks() {
-      console.log("📡 Запрашиваем задачи:", { uid, date });
+      console.log("📡 Запрашиваем задачи:", { telegramId, date });
       try {
         setLoading(true);
-        const url = `https://td-webapp.onrender.com/tasks?uid=${uid}&date=${date}`;
+        const url = `https://td-webapp.onrender.com/tasks?uid=${telegramId}&date=${date}`;
         setConsoleData(prev => prev + `\n📡 Fetching: ${url}`);
         const res = await fetch(url);
         const data = await res.json();
@@ -38,9 +38,9 @@ export default function Tasks({ date, uid, setConsoleData }) {
     }
 
     fetchTasks();
-  }, [uid, date]);
+  }, [telegramId, date]);
 
-  if (!uid) return <p style={{ textAlign: "center" }}>🔒 Не удалось определить пользователя</p>;
+  if (!telegramId) return <p style={{ textAlign: "center" }}>🔒 Не удалось определить пользователя</p>;
   if (loading) return <p style={{ textAlign: "center" }}>⏳ Загружаю задачи...</p>;
   if (tasks.length === 0) return <p style={{ textAlign: "center" }}>📭 Нет задач на этот день</p>;
 

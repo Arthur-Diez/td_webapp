@@ -91,8 +91,7 @@ export default function App() {
         {activeTab === "tasks" && (
           <Tasks
             date={selectedDate.toISOString().split('T')[0]}
-            uid={userId}
-            setConsoleData={setConsoleData}
+            telegramId={userId}
           />
         )}
         {activeTab === "calendar" && <Calendar />}
