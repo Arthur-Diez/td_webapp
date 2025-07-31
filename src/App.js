@@ -10,7 +10,7 @@ import { fetchUserTimezoneOffset } from './utils/timezone';
 import Tasks from './components/Tasks';
 import Calendar from './components/Calendar';
 import Profile from './components/Profile';
-import { fetchUserUUID } from "./utils/fetchUserUUID";
+
 
 
 import './App.css';
@@ -56,9 +56,8 @@ export default function App() {
           local_time: localTime.toISOString()
         }));
 
-        const uuid = await fetchUserUUID(tgId);
-        setConsoleData(prev => prev + `\n🆔 UUID: ${uuid}`);
-        setUserId(uuid);
+        setConsoleData(prev => prev + `\n🆔 Telegram ID: ${tgId}`);
+        setUserId(tgId);
 
         setConsoleData(prev => prev + `\n📅 Дата: ${localTime.toISOString().split("T")[0]}`);
 
