@@ -1,45 +1,39 @@
 // src/components/Tasks.jsx
 import React, { useEffect, useState } from 'react';
 import TaskCard from './TaskCard';
+import { api } from '../utils/api';
 
 export default function Tasks({ date, telegramId, setConsoleData = () => {} }) {
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);      // стартуем без спиннера
+  const [loading, setLoading] = useState(false);
   const [error, setError]   = useState(null);
 
   useEffect(() => {
-    // нет входных данных — ничего не грузим и не крутим спиннер
     if (!telegramId || !date) {
       setLoading(false);
       return;
     }
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timer = setTimeout(() => controller.abort(), 10000);
 
     (async () => {
       try {
         setError(null);
         setLoading(true);
 
-        const url = `https://td-webapp.onrender.com/tasks?uid=${telegramId}&date=${date}`;
+        const url = api(`/tasks?uid=${telegramId}&date=${date}`);
         setConsoleData(prev => prev + `\n📡 Fetching: ${url}`);
 
         const res = await fetch(url, { signal: controller.signal });
-        // network ok, но код ответа не 2xx
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
         setConsoleData(prev => prev + `\n📦 Response: ${JSON.stringify(data, null, 2)}`);
 
-        if (Array.isArray(data)) {
-          setTasks(data);
-        } else if (data && data.error) {
-          setTasks([]);
-          setError(data.error);
-        } else {
-          setTasks([]);
-        }
+        if (Array.isArray(data)) setTasks(data);
+        else if (data?.error) { setTasks([]); setError(data.error); }
+        else setTasks([]);
       } catch (e) {
         const msg = e.name === 'AbortError' ? 'timeout 10s' : e.message;
         setConsoleData(prev => prev + `\n❌ Fetch error: ${msg}`);
@@ -53,7 +47,7 @@ export default function Tasks({ date, telegramId, setConsoleData = () => {} }) {
 
     return () => {
       clearTimeout(timer);
-      controller.abort(); // отменим, если пропсы успели поменяться
+      controller.abort();
     };
   }, [telegramId, date, setConsoleData]);
 

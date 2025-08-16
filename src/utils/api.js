@@ -1,14 +1,4 @@
-export async function createTask(taskData) {
-  try {
-    const response = await fetch("https://td-webapp.onrender.com/add_task", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(taskData),
-    });
-
-    return await response.json();
-  } catch (err) {
-    console.error("Ошибка при создании задачи:", err);
-    return { error: err.message };
-  }
-}
+// src/utils/api.js
+// ⚠️ замени IP и порт на свои (если настроишь nginx — будет https и 443)
+export const API_BASE = 'http://147.45.167.44:8000';
+export const api = (path) => `${API_BASE}${path}`;
