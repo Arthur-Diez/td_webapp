@@ -11,18 +11,16 @@ import Tasks from './components/Tasks';
 import Calendar from './components/Calendar';
 import Profile from './components/Profile';
 
-
-
 import './App.css';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [debugText, setDebugText] = useState("⏳ Инициализация...");
-  const [consoleData, setConsoleData] = useState("🧾 Консоль запущена...");
-  const [activeTab, setActiveTab] = useState("tasks");
+  const [debugText, setDebugText] = useState('⏳ Инициализация...');
+  const [consoleData, setConsoleData] = useState('🧾 Консоль запущена...');
+  const [activeTab, setActiveTab] = useState('tasks');
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [userId, setUserId] = useState(null);
-  
+
   useEffect(() => {
     WebApp.ready();
     applyTelegramTheme();
@@ -30,7 +28,7 @@ export default function App() {
 
     async function initDate() {
       try {
-        setConsoleData(prev => prev + "\n🚀 initDate запущен");
+        setConsoleData(prev => prev + '\n🚀 initDate запущен');
 
         const offsetMin = await fetchUserTimezoneOffset();
         setConsoleData(prev => prev + `\n🕒 Смещение: ${offsetMin} мин`);
@@ -41,28 +39,25 @@ export default function App() {
         const localTime = new Date(utcTimestamp + offsetMin * 60000);
 
         const tgId = WebApp.initDataUnsafe?.user?.id;
-        console.log("🧩 Telegram ID:", tgId);
         setConsoleData(prev => prev + `\n🧩 Telegram ID: ${tgId}`);
 
         if (!tgId) {
-          setConsoleData(prev => prev + "\n⛔ Не удалось получить Telegram ID");
+          setConsoleData(prev => prev + '\n⛔ Не удалось получить Telegram ID');
           setUserId(null);
           return;
         }
 
-        // Отправка данных в Telegram-бот
+        // (опционально) сообщаем боту текущее локальное время
         WebApp.sendData(JSON.stringify({
           telegram_id: tgId,
-          local_time: localTime.toISOString()
+          local_time: localTime.toISOString(),
         }));
 
-        setConsoleData(prev => prev + `\n🆔 Telegram ID: ${tgId}`);
         setUserId(tgId);
-
-        setConsoleData(prev => prev + `\n📅 Дата: ${localTime.toISOString().split("T")[0]}`);
-
         setCurrentDate(localTime);
         setSelectedDate(localTime);
+
+        setConsoleData(prev => prev + `\n📅 Дата: ${localTime.toLocaleDateString('en-CA')}`);
 
         setDebugText(
           `✅ Смещение: ${offsetMin} мин\n` +
@@ -72,7 +67,7 @@ export default function App() {
       } catch (err) {
         console.error('⛔ Ошибка в initDate:', err);
         setConsoleData(prev => prev + `\n⛔ Ошибка в initDate: ${err.message}`);
-        setDebugText("❌ Ошибка получения смещения");
+        setDebugText('❌ Ошибка получения смещения');
         setCurrentDate(new Date());
       }
     }
@@ -81,35 +76,45 @@ export default function App() {
     return () => WebApp.offEvent('themeChanged', applyTelegramTheme);
   }, []);
 
+  // локальная дата для запросов в API (YYYY-MM-DD)
+  const dateStr =
+    selectedDate instanceof Date
+      ? selectedDate.toLocaleDateString('en-CA')
+      : '';
+
   return (
     <div className="App">
       <CalendarHeader date={currentDate} onTabChange={setActiveTab} />
       <WeekStrip date={selectedDate} onDateSelect={setSelectedDate} />
 
       <main className="main-content">
-        {activeTab === "tasks" && (
+        {activeTab === 'tasks' && (
           <Tasks
-            date={selectedDate.toISOString().split('T')[0]}
+            date={dateStr}                // <-- ЛОКАЛЬНАЯ дата
             telegramId={userId}
+            setConsoleData={setConsoleData} // <-- передаём логгер
           />
         )}
-        {activeTab === "calendar" && <Calendar />}
-        {activeTab === "profile" && <Profile />}
-        {activeTab === "settings" && (
+        {activeTab === 'calendar' && <Calendar />}
+        {activeTab === 'profile' && <Profile />}
+        {activeTab === 'settings' && (
           <p style={{ textAlign: 'center', marginTop: 40 }}>
             🛠 Раздел настроек будет позже
           </p>
         )}
-         <pre style={{
-          background: "#f0f0f0",
-          color: "#333",
-          fontSize: "12px",
-          padding: "12px",
-          margin: "12px auto",
-          maxWidth: "90%",
-          borderRadius: "8px",
-          whiteSpace: "pre-wrap"
-        }}>
+
+        <pre
+          style={{
+            background: '#f0f0f0',
+            color: '#333',
+            fontSize: '12px',
+            padding: '12px',
+            margin: '12px auto',
+            maxWidth: '90%',
+            borderRadius: '8px',
+            whiteSpace: 'pre-wrap',
+          }}
+        >
           {consoleData}
         </pre>
       </main>

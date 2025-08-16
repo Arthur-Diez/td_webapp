@@ -4,37 +4,62 @@ import TaskCard from './TaskCard';
 
 export default function Tasks({ date, telegramId, setConsoleData = () => {} }) {
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);      // стартуем без спиннера
+  const [error, setError]   = useState(null);
 
   useEffect(() => {
+    // нет входных данных — ничего не грузим и не крутим спиннер
     if (!telegramId || !date) {
-      console.warn('⛔ Нет UID или даты, fetch не выполняется');
+      setLoading(false);
       return;
     }
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     (async () => {
       try {
+        setError(null);
         setLoading(true);
+
         const url = `https://td-webapp.onrender.com/tasks?uid=${telegramId}&date=${date}`;
         setConsoleData(prev => prev + `\n📡 Fetching: ${url}`);
 
-        const res = await fetch(url);
-        const data = await res.json();
+        const res = await fetch(url, { signal: controller.signal });
+        // network ok, но код ответа не 2xx
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
+        const data = await res.json();
         setConsoleData(prev => prev + `\n📦 Response: ${JSON.stringify(data, null, 2)}`);
-        setTasks(!data?.error && Array.isArray(data) ? data : []);
+
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else if (data && data.error) {
+          setTasks([]);
+          setError(data.error);
+        } else {
+          setTasks([]);
+        }
       } catch (e) {
-        console.error('❌ Ошибка запроса задач:', e);
-        setConsoleData(prev => prev + `\n❌ Fetch error: ${e.message}`);
+        const msg = e.name === 'AbortError' ? 'timeout 10s' : e.message;
+        setConsoleData(prev => prev + `\n❌ Fetch error: ${msg}`);
+        setError(msg);
         setTasks([]);
       } finally {
+        clearTimeout(timer);
         setLoading(false);
       }
     })();
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort(); // отменим, если пропсы успели поменяться
+    };
   }, [telegramId, date, setConsoleData]);
 
   if (!telegramId) return <p style={{ textAlign: 'center' }}>🔒 Не удалось определить пользователя</p>;
-  if (loading) return <p style={{ textAlign: 'center' }}>⏳ Загружаю задачи...</p>;
+  if (loading)     return <p style={{ textAlign: 'center' }}>⏳ Загружаю задачи...</p>;
+  if (error)       return <p style={{ textAlign: 'center' }}>⚠️ Ошибка: {String(error)}</p>;
   if (tasks.length === 0) return <p style={{ textAlign: 'center' }}>📭 Нет задач на этот день</p>;
 
   return (
@@ -45,11 +70,11 @@ export default function Tasks({ date, telegramId, setConsoleData = () => {} }) {
         const end     = hasEnd ? new Date(task.end_dt) : null;
         const expired = hasEnd && end < new Date();
 
-        const timeStr = !task.all_day
-          ? hasEnd
+        const timeStr = task.all_day
+          ? null
+          : hasEnd
             ? `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}–${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-            : `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-          : null;
+            : `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
         return (
           <div key={task.id} className={`task-card ${expired ? 'expired' : ''}`}>
