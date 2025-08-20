@@ -1,0 +1,31 @@
+.tl { width: 100%; max-width: 640px; margin: 0 auto; padding: 12px 16px; }
+.tl-date { font-size: 22px; font-weight: 600; margin: 8px 0 12px; }
+.tl-wrap { position: relative; }
+.tl-line { position: absolute; left: 72px; top: 0; bottom: 0; width: 1px; background: #e5e7eb; }
+.tl-list { list-style: none; padding: 0; margin: 0; }
+.tl-row { display: grid; grid-template-columns: 56px 56px 1fr 36px; gap: 12px; align-items: start; margin-bottom: 16px; }
+.tl-empty { color:#6b7280; font-size: 14px; padding: 16px 0; }
+.tl-time { font-size: 11px; color:#6b7280; line-height: 1; padding-top: 8px; text-align: right; }
+.tl-time-bottom { margin-top: 8px; }
+.tl-pin { position: relative; display: flex; align-items: center; justify-content: center; }
+.tl-pin-circle { width: 56px; height: 56px; border-radius: 9999px; background: #ffe4e6; border: 1px solid #fecdd3; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size: 20px; font-weight:600; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+.tl-card { border: 1px solid #e5e7eb; border-radius: 16px; padding: 12px 14px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.tl-meta { font-size: 11px; color:#6b7280; margin-bottom: 4px; }
+.tl-title { font-size: 18px; font-weight: 600; line-height: 1.2; word-break: break-word; }
+.tl-from { font-size: 11px; color:#6b7280; margin-top: 4px; }
+.tl-check { width: 28px; height: 28px; border: 1px solid #d1d5db; border-radius: 9999px; margin-top: 8px; }
+.tl-check:hover { border-color: #fb7185; }
+
+.tl-gap-row { display: grid; grid-template-columns: 56px 56px 1fr 36px; gap: 12px; align-items: center; margin: 6px 0; }
+.tl-gap { font-size: 12px; color:#ef4444; display:flex; align-items:center; gap:8px; }
+.tl-gap::before { content:""; display:inline-block; width:10px; height:10px; border-radius:9999px; border:1px solid #fecdd3; }
+.tl-gap-dot { display:flex; align-items:center; justify-content:center; }
+
+.tl-divider { border-top: 1px solid #e5e7eb; margin: 16px 0 8px; }
+.tl-all-day-title { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color:#9ca3af; margin-bottom: 6px; }
+.tl-allday-list { list-style:none; padding:0; margin:0; }
+.tl-allday-row { display:grid; grid-template-columns: 56px 56px 1fr 36px; gap:12px; align-items:start; margin-bottom: 12px; }
+.tl-ad-time { font-size: 11px; color:#6b7280; padding-top: 10px; text-align:right; }
+.tl-ad-pin { display:flex; align-items:center; justify-content:center; }
+.tl-ad-circle { width: 44px; height: 44px; border-radius:9999px; background:#ffe4e6; border:1px solid #fecdd3; color:#ef4444; display:flex; align-items:center; justify-content:center; }
+.tl-ad-card { border:1px solid #e5e7eb; border-radius:16px; padding:12px 14px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
