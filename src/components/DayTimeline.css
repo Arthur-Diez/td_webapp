@@ -2,9 +2,9 @@
 
 /* управляем сеткой через переменные */
 :root{
-  --tl-time-w: 46px;    /* колонка с временем (чуть уже — сместит всё левее) */
-  --tl-pin-w: 50px;     /* колонка с пином */
-  --tl-check-w: 32px;   /* колонка с правым «чеком» (меньше) */
+  --tl-time-w: 36px;    /* колонка с временем (чуть уже — сместит всё левее) */
+  --tl-pin-w: 46px;     /* колонка с пином */
+  --tl-check-w: 30px;   /* колонка с правым «чеком» (меньше) */
   --tl-gap: 10px;
   --tl-card-radius: 14px;
 
@@ -14,7 +14,7 @@
   --tl-border-soft: rgba(255,255,255,.12);    /* мягче */
   --tl-text-dim: rgba(255,255,255,.72);
   --tl-text-faint: rgba(255,255,255,.6);
-  --tl-line: rgba(255,255,255,.18);           /* вертикальная линия */
+  --tl-line: rgba(255,255,255,.14);           /* вертикальная линия */
   --tl-accent-bg: #2a1a1d;                    /* фон пина */
   --tl-accent-ring: rgba(255,255,255,.22);    /* кольцо пина */
 }
@@ -22,7 +22,7 @@
 .tl{
   max-width: 880px;
   margin: 0 auto;
-  padding: 0 8px 24px;     /* меньше левого отступа — визуально «влево» */
+  padding: 0 4px 24px;     /* меньше левого отступа — визуально «влево» */
 }
 
 .tl-wrap{
@@ -36,9 +36,17 @@
   top: 0; bottom: 0;
   left: calc(var(--tl-time-w) + var(--tl-pin-w) / 2);
   width: 2px;
-  background: var(--tl-line);
+  /* вместо сплошной — мягкий пунктир с плавным затуханием */
+  background:
+    linear-gradient(var(--tl-line-fade), var(--tl-line) 12%, var(--tl-line) 88%, var(--tl-line-fade)),
+    repeating-linear-gradient(
+      to bottom,
+      var(--tl-line) 0 14px,
+      transparent 14px 26px
+    );
+  border-radius: 2px;
   pointer-events: none;
-  z-index: 0;  /* линия СНИЗУ */
+  z-index: 0;
 }
 
 /* список строк таймлайна */
@@ -64,10 +72,15 @@
 .tl-time-bottom{ margin-top: 4px; color: var(--tl-text-faint); }
 
 /* пин */
-.tl-pin{
-  position: relative;
-  display: flex; justify-content: center; align-items: center;
-  z-index: 2; /* ВЫШЕ линии — чтобы та не просвечивала */
+.tl-pin{ position: relative; display:flex; justify-content:center; align-items:center; z-index:2; }
+.tl-pin-circle{
+  width: 42px; height: 42px;               /* чуть компактнее */
+  border-radius: 50%;
+  background: var(--tl-surface);            /* непрозрачная «затычка» */
+  display: grid; place-items: center; font-weight: 600; color: var(--tl-text-dim);
+  box-shadow:
+    0 0 0 10px var(--tl-accent-bg) inset,   /* внутренний тон */
+    0 0 0 1px var(--tl-accent-ring);        /* тонкое кольцо */
 }
 
 .tl-pin-circle{

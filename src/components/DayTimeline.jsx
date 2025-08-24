@@ -110,7 +110,8 @@ export default function DayTimeline({ dateISO, tasks }) {
                   <div className="tl-title">{t.title}</div>
                   {t.from_name && <div className="tl-from">от {t.from_name}</div>}
                 </div>
-                <div className="tl-check tl-check-hidden" />
+                {/* показываем чек и здесь */}
+                <div className="tl-check" />
               </li>
             ))}
           </ul>
