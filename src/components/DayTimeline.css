@@ -75,29 +75,32 @@
   background: transparent;   /* переопределим ниже */
 }
 
-/* верхняя половина у задачи */
+/* ВЕРХ: от верха строки до (центр - радиус) */
 .tl-row[data-prev="task"] .tl-pin::before{
-  top: 0; bottom: 50%;
+  top: 0;
+  bottom: calc(50% + var(--tl-pin-size) / 2);
   background: var(--tl-line-solid);
 }
 .tl-row[data-prev="gap"] .tl-pin::before{
-  top: 0; bottom: 50%;
+  top: 0;
+  bottom: calc(50% + var(--tl-pin-size) / 2);
   background-image: repeating-linear-gradient(
     to bottom,
     var(--tl-line-dash) 0 6px,
     transparent 6px 12px
   );
 }
-/* если предыдущего нет — не рисуем верх */
 .tl-row[data-prev="none"] .tl-pin::before{ display:none; }
 
-/* нижняя половина у задачи */
+/* НИЗ: от (центр + радиус) до низа строки */
 .tl-row[data-next="task"] .tl-pin::after{
-  top: 50%; bottom: 0;
+  top: calc(50% + var(--tl-pin-size) / 2);
+  bottom: 0;
   background: var(--tl-line-solid);
 }
 .tl-row[data-next="gap"] .tl-pin::after{
-  top: 50%; bottom: 0;
+  top: calc(50% + var(--tl-pin-size) / 2);
+  bottom: 0;
   background-image: repeating-linear-gradient(
     to bottom,
     var(--tl-line-dash) 0 6px,
