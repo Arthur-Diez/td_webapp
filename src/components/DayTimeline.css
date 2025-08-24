@@ -1,105 +1,111 @@
 /* src/components/DayTimeline.css */
 
-/* управляем сеткой через переменные */
+/* ===== Управляем сдвигом влево через переменные ===== */
 :root{
-  --tl-time-w: 36px;    /* колонка с временем (чуть уже — сместит всё левее) */
-  --tl-pin-w: 46px;     /* колонка с пином */
-  --tl-check-w: 30px;   /* колонка с правым «чеком» (меньше) */
+  --tl-time-w: 36px;    /* колонка времени — уже → всё смещается левее */
+  --tl-pin-w: 46px;     /* колонка кружка/иконки */
+  --tl-check-w: 30px;   /* колонка чекбокса справа */
   --tl-gap: 10px;
   --tl-card-radius: 14px;
 
-  /* базовые цвета (можешь переопределить из своей темы) */
-  --tl-surface: #12161c;                      /* цвет поверхности карточек/фона */
-  --tl-border: rgba(255,255,255,.16);         /* обводки */
-  --tl-border-soft: rgba(255,255,255,.12);    /* мягче */
-  --tl-text-dim: rgba(255,255,255,.72);
-  --tl-text-faint: rgba(255,255,255,.6);
-  --tl-line: rgba(255,255,255,.14);           /* вертикальная линия */
-  --tl-accent-bg: #2a1a1d;                    /* фон пина */
-  --tl-accent-ring: rgba(255,255,255,.22);    /* кольцо пина */
+  /* цвета (можешь переопределить из своей темы) */
+  --tl-surface: var(--tg-bg);                /* фон кругов/карточек */
+  --tl-border: rgba(255,255,255,.16);
+  --tl-border-soft: rgba(255,255,255,.12);
+  --tl-text-dim: rgba(255,255,255,.78);
+  --tl-text-faint: rgba(255,255,255,.62);
+  --tl-line-solid: rgba(255,255,255,.18);    /* сплошная часть линии */
+  --tl-line-dash:  rgba(255,255,255,.22);    /* пунктир в gap */
 }
 
-.tl{
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 0 4px 24px;     /* меньше левого отступа — визуально «влево» */
-}
+/* Контейнер таймлайна */
+.tl{ max-width: 880px; margin: 0 auto; padding: 0 4px 24px; }
+.tl-wrap{ position: relative; margin-top: 2px; }
 
-.tl-wrap{
-  position: relative;
-  margin-top: 2px;
-}
-
-/* вертикальная линия — строго в центре колонки с пином */
+/* ===== БАЗОВАЯ ВЕРТИКАЛЬНАЯ ЛИНИЯ ДЛЯ ЗАДАЧ СО ВРЕМЕНЕМ =====
+   Это сплошная линия, идущая ТОЛЬКО внутри списка timed-задач.
+   Мы «обрезаем» её сверху/снизу до середины кружков через mask-элементы.
+*/
 .tl-line{
   position: absolute;
-  top: 0; bottom: 0;
+  top: 22px;          /* половина высоты кружка (~44px) → старт с центра 1-го круга */
+  bottom: 22px;       /* финиш в центре последнего круга */
   left: calc(var(--tl-time-w) + var(--tl-pin-w) / 2);
   width: 2px;
-  /* вместо сплошной — мягкий пунктир с плавным затуханием */
-  background:
-    linear-gradient(var(--tl-line-fade), var(--tl-line) 12%, var(--tl-line) 88%, var(--tl-line-fade)),
-    repeating-linear-gradient(
-      to bottom,
-      var(--tl-line) 0 14px,
-      transparent 14px 26px
-    );
+  background: var(--tl-line-solid);
   border-radius: 2px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* список строк таймлайна */
+/* Список строк таймлайна */
 .tl-list{ list-style: none; margin: 0; padding: 0; }
-.tl-empty{ padding: 24px 8px; text-align: center; opacity: .7; }
+.tl-empty{ padding: 16px 8px; opacity: .7; text-align: center; }
 
-/* одна строка: время | пин | карточка | чек */
+/* Строка: [время] [пин] [карточка] [чек] */
 .tl-row, .tl-gap-row{
   display: grid;
   grid-template-columns: var(--tl-time-w) var(--tl-pin-w) 1fr var(--tl-check-w);
-  align-items: center;
   gap: var(--tl-gap);
+  align-items: center;
   padding: 10px 0;
+  position: relative;
 }
 
-/* левая колонка со временем */
+/* ===== МАСКА И ПУНКТИР В МЕСТАХ GAP =====
+   В каждой gap-строке мы перекрываем сплошную линию и рисуем пунктир на её месте.
+*/
+.tl-gap-row::before{
+  content:"";
+  position: absolute;
+  inset: 0 auto 0 auto;
+  left: calc(var(--tl-time-w) + var(--tl-pin-w) / 2 - 1px);
+  width: 2px;
+  background: var(--tg-bg);       /* перекрыли сплошную линию фоном */
+  z-index: 1;
+}
+.tl-gap-row::after{
+  content:"";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: calc(var(--tl-time-w) + var(--tl-pin-w) / 2 - 1px);
+  width: 2px;
+  background-image: linear-gradient(to bottom, var(--tl-line-dash) 50%, rgba(0,0,0,0) 0%);
+  background-size: 2px 10px;      /* длина штриха/пробела */
+  background-repeat: repeat-y;
+  z-index: 2;
+}
+
+/* Левая колонка со временем */
 .tl-time{
   text-align: right;
-  line-height: 1.15;
+  line-height: 1.1;
   font-size: 12px;
   color: var(--tl-text-dim);
 }
 .tl-time-bottom{ margin-top: 4px; color: var(--tl-text-faint); }
 
-/* пин */
-.tl-pin{ position: relative; display:flex; justify-content:center; align-items:center; z-index:2; }
+/* Пин (кружок с иконкой) */
+.tl-pin{ display:flex; justify-content:center; align-items:center; position:relative; z-index:3; }
 .tl-pin-circle{
-  width: 42px; height: 42px;               /* чуть компактнее */
-  border-radius: 50%;
-  background: var(--tl-surface);            /* непрозрачная «затычка» */
-  display: grid; place-items: center; font-weight: 600; color: var(--tl-text-dim);
-  box-shadow:
-    0 0 0 10px var(--tl-accent-bg) inset,   /* внутренний тон */
-    0 0 0 1px var(--tl-accent-ring);        /* тонкое кольцо */
-}
-
-.tl-pin-circle{
-  position: relative;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: var(--tl-surface);     /* непрозрачная «затычка» */
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--tl-surface);
   display: grid; place-items: center;
-  font-weight: 600;
-  color: var(--tl-text-dim);
+  font-weight: 700; color: var(--tl-text-dim);
   box-shadow:
-    0 0 0 10px var(--tl-accent-bg) inset,  /* розовый «фон» внутри */
-    0 0 0 1px var(--tl-accent-ring);       /* тонкое кольцо */
+    0 0 0 10px rgba(255,255,255,.06) inset,  /* внутренний тон */
+    0 0 0 1px rgba(255,255,255,.25);         /* тонкое кольцо */
 }
 
-/* для gap — только точка, без внутреннего круга */
-.tl-gap-dot .tl-pin-circle{ display: none; }
+/* Для gap — показываем только «точку», без круга */
+.tl-gap-dot::before{
+  content:"";
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--tl-text-faint);
+  display: block;
+}
 
-/* карточка */
+/* Карточка задачи */
 .tl-card{
   border: 1px solid var(--tl-border);
   border-radius: var(--tl-card-radius);
@@ -109,36 +115,27 @@
 .tl-title{ font-size: 16px; font-weight: 700; }
 .tl-from{ margin-top: 6px; font-size: 12px; color: var(--tl-text-faint); }
 
-/* правый чек-кружок (чуть меньше) */
+/* Правый чек */
 .tl-check{
-  width: 22px; height: 22px;
-  border-radius: 50%;
+  width: 22px; height: 22px; border-radius: 50%;
   border: 1.5px solid var(--tl-border);
   justify-self: center;
 }
 .tl-check-hidden{ visibility: hidden; }
 
-/* ряд «свободное окно» */
-.tl-gap-row .tl-gap{
-  font-size: 12px; color: var(--tl-text-faint);
-  padding: 8px 10px;
-  border: 1px dashed var(--tl-border-soft);
-  border-radius: 999px;
-}
-
-/* секция «на весь день» */
+/* ===== Блок «на весь день» — без линии между ними ===== */
 .tl-divider{ height: 1px; background: var(--tl-border); margin: 18px 0 8px; }
 .tl-all-day-title{
-  font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
-  color: var(--tl-text-dim); margin-bottom: 8px;
+  font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--tl-text-dim); margin: 0 0 8px calc(var(--tl-time-w));
 }
 
 .tl-allday-list{ list-style: none; margin: 0; padding: 0; }
 .tl-allday-row{
   display: grid;
   grid-template-columns: var(--tl-time-w) var(--tl-pin-w) 1fr var(--tl-check-w);
-  align-items: center;
   gap: var(--tl-gap);
+  align-items: center;
   padding: 8px 0;
 }
 .tl-ad-time{ text-align: right; font-size: 12px; color: var(--tl-text-faint); }
@@ -146,17 +143,18 @@
 .tl-ad-circle{
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--tl-surface);
-  display: grid; place-items: center; font-weight: 600; color: var(--tl-text-dim);
+  display: grid; place-items: center;
+  font-weight: 700; color: var(--tl-text-dim);
   box-shadow:
-    0 0 0 10px var(--tl-accent-bg) inset,
-    0 0 0 1px var(--tl-accent-ring);
+    0 0 0 10px rgba(255,255,255,.06) inset,
+    0 0 0 1px rgba(255,255,255,.25);
 }
 .tl-ad-card{ border: 1px solid var(--tl-border); border-radius: var(--tl-card-radius); padding: 12px 14px; }
 
-/* адаптив: ужимаем колонки на очень узких экранах */
+/* Адаптив: узкие экраны */
 @media (max-width: 420px){
   :root{
-    --tl-time-w: 42px;
+    --tl-time-w: 40px;
     --tl-pin-w: 48px;
     --tl-check-w: 28px;
   }
