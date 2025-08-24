@@ -2,43 +2,28 @@
 
 /* ===== Управляем сдвигом влево через переменные ===== */
 :root{
-  --tl-time-w: 36px;    /* колонка времени — уже → всё смещается левее */
-  --tl-pin-w: 46px;     /* колонка кружка/иконки */
-  --tl-check-w: 30px;   /* колонка чекбокса справа */
+  --tl-time-w: 36px;         /* колонка времени — уже → всё левее */
+  --tl-pin-w: 46px;          /* колонка с кружком */
+  --tl-check-w: 30px;
   --tl-gap: 10px;
-  --tl-card-radius: 14px;
 
-  /* цвета (можешь переопределить из своей темы) */
-  --tl-surface: var(--tg-bg);                /* фон кругов/карточек */
+  --tl-card-radius: 14px;
+  --tl-pin-size: 44px;
+
+  /* цвета (можно переопределить темой Telegram) */
+  --tl-surface: var(--tg-bg);
   --tl-border: rgba(255,255,255,.16);
   --tl-border-soft: rgba(255,255,255,.12);
   --tl-text-dim: rgba(255,255,255,.78);
   --tl-text-faint: rgba(255,255,255,.62);
-  --tl-line-solid: rgba(255,255,255,.18);    /* сплошная часть линии */
-  --tl-line-dash:  rgba(255,255,255,.22);    /* пунктир в gap */
+
+  --tl-line-solid: rgba(255,255,255,.18);
+  --tl-line-dash:  rgba(255,255,255,.22);
 }
 
-/* Контейнер таймлайна */
 .tl{ max-width: 880px; margin: 0 auto; padding: 0 4px 24px; }
 .tl-wrap{ position: relative; margin-top: 2px; }
 
-/* ===== БАЗОВАЯ ВЕРТИКАЛЬНАЯ ЛИНИЯ ДЛЯ ЗАДАЧ СО ВРЕМЕНЕМ =====
-   Это сплошная линия, идущая ТОЛЬКО внутри списка timed-задач.
-   Мы «обрезаем» её сверху/снизу до середины кружков через mask-элементы.
-*/
-.tl-line{
-  position: absolute;
-  top: 22px;          /* половина высоты кружка (~44px) → старт с центра 1-го круга */
-  bottom: 22px;       /* финиш в центре последнего круга */
-  left: calc(var(--tl-time-w) + var(--tl-pin-w) / 2);
-  width: 2px;
-  background: var(--tl-line-solid);
-  border-radius: 2px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Список строк таймлайна */
 .tl-list{ list-style: none; margin: 0; padding: 0; }
 .tl-empty{ padding: 16px 8px; opacity: .7; text-align: center; }
 
@@ -52,30 +37,6 @@
   position: relative;
 }
 
-/* ===== МАСКА И ПУНКТИР В МЕСТАХ GAP =====
-   В каждой gap-строке мы перекрываем сплошную линию и рисуем пунктир на её месте.
-*/
-.tl-gap-row::before{
-  content:"";
-  position: absolute;
-  inset: 0 auto 0 auto;
-  left: calc(var(--tl-time-w) + var(--tl-pin-w) / 2 - 1px);
-  width: 2px;
-  background: var(--tg-bg);       /* перекрыли сплошную линию фоном */
-  z-index: 1;
-}
-.tl-gap-row::after{
-  content:"";
-  position: absolute;
-  top: 0; bottom: 0;
-  left: calc(var(--tl-time-w) + var(--tl-pin-w) / 2 - 1px);
-  width: 2px;
-  background-image: linear-gradient(to bottom, var(--tl-line-dash) 50%, rgba(0,0,0,0) 0%);
-  background-size: 2px 10px;      /* длина штриха/пробела */
-  background-repeat: repeat-y;
-  z-index: 2;
-}
-
 /* Левая колонка со временем */
 .tl-time{
   text-align: right;
@@ -85,19 +46,78 @@
 }
 .tl-time-bottom{ margin-top: 4px; color: var(--tl-text-faint); }
 
-/* Пин (кружок с иконкой) */
-.tl-pin{ display:flex; justify-content:center; align-items:center; position:relative; z-index:3; }
+/* Кружок задачи */
+.tl-pin{
+  position: relative;                /* важно для ::before/::after */
+  display:flex; justify-content:center; align-items:center;
+  z-index: 2;                        /* выше линий-псевдоэлементов */
+}
 .tl-pin-circle{
-  width: 44px; height: 44px; border-radius: 50%;
+  width: var(--tl-pin-size); height: var(--tl-pin-size);
+  border-radius: 50%;
   background: var(--tl-surface);
   display: grid; place-items: center;
   font-weight: 700; color: var(--tl-text-dim);
   box-shadow:
-    0 0 0 10px rgba(255,255,255,.06) inset,  /* внутренний тон */
-    0 0 0 1px rgba(255,255,255,.25);         /* тонкое кольцо */
+    0 0 0 10px rgba(255,255,255,.06) inset,
+    0 0 0 1px rgba(255,255,255,.25);
 }
 
-/* Для gap — показываем только «точку», без круга */
+/* ===== Соединители (вертикальные линии) рисуем у каждого пина ===== */
+.tl-row .tl-pin::before,
+.tl-row .tl-pin::after,
+.tl-gap-row .tl-pin::before{
+  content: "";
+  position: absolute;
+  left: calc(50% - 1px);     /* строго по центру кружка */
+  width: 2px;
+  z-index: 1;                /* под кружком, над фоном */
+  background: transparent;   /* переопределим ниже */
+}
+
+/* верхняя половина у задачи */
+.tl-row[data-prev="task"] .tl-pin::before{
+  top: 0; bottom: 50%;
+  background: var(--tl-line-solid);
+}
+.tl-row[data-prev="gap"] .tl-pin::before{
+  top: 0; bottom: 50%;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--tl-line-dash) 0 6px,
+    transparent 6px 12px
+  );
+}
+/* если предыдущего нет — не рисуем верх */
+.tl-row[data-prev="none"] .tl-pin::before{ display:none; }
+
+/* нижняя половина у задачи */
+.tl-row[data-next="task"] .tl-pin::after{
+  top: 50%; bottom: 0;
+  background: var(--tl-line-solid);
+}
+.tl-row[data-next="gap"] .tl-pin::after{
+  top: 50%; bottom: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--tl-line-dash) 0 6px,
+    transparent 6px 12px
+  );
+}
+.tl-row[data-next="none"] .tl-pin::after{ display:none; }
+
+/* строка GAP — сплошной пунктир на всю высоту */
+.tl-gap-row .tl-pin::before{
+  top: 0; bottom: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--tl-line-dash) 0 6px,
+    transparent 6px 12px
+  );
+}
+.tl-gap-row .tl-pin::after{ display:none; }
+
+/* Для GAP вместо кружка — маленькая точка */
 .tl-gap-dot::before{
   content:"";
   width: 10px; height: 10px; border-radius: 50%;
@@ -105,7 +125,7 @@
   display: block;
 }
 
-/* Карточка задачи */
+/* Карточки */
 .tl-card{
   border: 1px solid var(--tl-border);
   border-radius: var(--tl-card-radius);
@@ -123,7 +143,7 @@
 }
 .tl-check-hidden{ visibility: hidden; }
 
-/* ===== Блок «на весь день» — без линии между ними ===== */
+/* ===== Блок «на весь день» — без линий между ними ===== */
 .tl-divider{ height: 1px; background: var(--tl-border); margin: 18px 0 8px; }
 .tl-all-day-title{
   font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
@@ -141,7 +161,7 @@
 .tl-ad-time{ text-align: right; font-size: 12px; color: var(--tl-text-faint); }
 .tl-ad-pin{ display: flex; justify-content: center; align-items: center; }
 .tl-ad-circle{
-  width: 44px; height: 44px; border-radius: 50%;
+  width: var(--tl-pin-size); height: var(--tl-pin-size); border-radius: 50%;
   background: var(--tl-surface);
   display: grid; place-items: center;
   font-weight: 700; color: var(--tl-text-dim);

@@ -9,13 +9,16 @@ const minsBetween = (a, b) => Math.max(0, Math.round((b - a) / 60000));
 const humanDur = (m) => (m < 60 ? `${m}m` : `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ""}`);
 
 export default function DayTimeline({ dateISO, tasks }) {
+  // задачи со временем
   const timed = tasks
     .filter((t) => !t.all_day && t.start_dt)
     .map((t) => ({ ...t, start: new Date(t.start_dt), end: t.end_dt ? new Date(t.end_dt) : null }))
     .sort((a, b) => a.start - b.start);
 
+  // задачи на весь день
   const allDay = tasks.filter((t) => t.all_day);
 
+  // ряды таймлайна: task + gap
   const rows = [];
   for (let i = 0; i < timed.length; i++) {
     const cur = timed[i];
@@ -34,48 +37,52 @@ export default function DayTimeline({ dateISO, tasks }) {
   return (
     <div className="tl">
       <div className="tl-wrap">
-        {/* Сплошная линия только для timed-задач.
-            Пунктир в местах gap дорисует CSS на .tl-gap-row */}
-        {hasTimed && <div className="tl-line" />}
-
         <ul className="tl-list">
           {!hasTimed && <li className="tl-empty">Нет задач с указанным временем.</li>}
 
-          {rows.map((r) =>
-            r.kind === "task" ? (
-              <li key={`t-${r.t.id}`} className="tl-row">
-                <div className="tl-time">
-                  <div>{fmtHM(r.t.start)}</div>
-                  {r.t.end && r.t.end.getTime() !== r.t.start.getTime() && (
-                    <div className="tl-time-bottom">{fmtHM(r.t.end)}</div>
-                  )}
-                </div>
+          {rows.map((r, idx) => {
+            const prevKind = rows[idx - 1]?.kind ?? "none";
+            const nextKind = rows[idx + 1]?.kind ?? "none";
 
-                <div className="tl-pin">
-                  <div className="tl-pin-circle">{r.t.icon || "@"}</div>
-                </div>
-
-                <div className="tl-card">
-                  <div className="tl-meta">
-                    {r.t.end
-                      ? `${fmtHM(r.t.start)} – ${fmtHM(r.t.end)} (${humanDur(minsBetween(r.t.start, r.t.end))})`
-                      : fmtHM(r.t.start)}
+            if (r.kind === "task") {
+              return (
+                <li key={`t-${r.t.id}`} className="tl-row" data-prev={prevKind} data-next={nextKind}>
+                  <div className="tl-time">
+                    <div>{fmtHM(r.t.start)}</div>
+                    {r.t.end && r.t.end.getTime() !== r.t.start.getTime() && (
+                      <div className="tl-time-bottom">{fmtHM(r.t.end)}</div>
+                    )}
                   </div>
-                  <div className="tl-title">{r.t.title}</div>
-                  {r.t.from_name && <div className="tl-from">от {r.t.from_name}</div>}
-                </div>
 
-                <div className="tl-check" aria-hidden />
-              </li>
-            ) : (
-              <li key={`g-${r.afterId}`} className="tl-gap-row">
+                  <div className="tl-pin">
+                    <div className="tl-pin-circle">{r.t.icon || "@"}</div>
+                  </div>
+
+                  <div className="tl-card">
+                    <div className="tl-meta">
+                      {r.t.end
+                        ? `${fmtHM(r.t.start)} – ${fmtHM(r.t.end)} (${humanDur(minsBetween(r.t.start, r.t.end))})`
+                        : fmtHM(r.t.start)}
+                    </div>
+                    <div className="tl-title">{r.t.title}</div>
+                    {r.t.from_name && <div className="tl-from">от {r.t.from_name}</div>}
+                  </div>
+
+                  <div className="tl-check" aria-hidden />
+                </li>
+              );
+            }
+
+            // GAP
+            return (
+              <li key={`g-${r.afterId}`} className="tl-gap-row" data-prev={prevKind} data-next={nextKind}>
                 <div className="tl-time" />
                 <div className="tl-pin tl-gap-dot" />
                 <div className="tl-card tl-gap">{humanDur(r.minutes)}</div>
                 <div className="tl-check tl-check-hidden" />
               </li>
-            )
-          )}
+            );
+          })}
         </ul>
       </div>
 
@@ -83,7 +90,6 @@ export default function DayTimeline({ dateISO, tasks }) {
         <>
           <div className="tl-divider" />
           <div className="tl-all-day-title">Задачи на весь день</div>
-
           <ul className="tl-allday-list">
             {allDay.map((t) => (
               <li key={`ad-${t.id}`} className="tl-allday-row">
