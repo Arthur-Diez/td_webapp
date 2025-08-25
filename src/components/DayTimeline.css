@@ -17,8 +17,9 @@
   --tl-text-dim: rgba(255,255,255,.78);
   --tl-text-faint: rgba(255,255,255,.62);
 
-  --tl-line-solid: rgba(255,255,255,.18);
+  --tl-line-solid: rgba(255,255,255,.28);
   --tl-line-dash:  rgba(255,255,255,.22);
+  --tl-line-clear: 4px;     /* отступ линии от края круга */
 }
 
 .tl{ max-width: 880px; margin: 0 auto; padding: 0 4px 24px; }
@@ -32,9 +33,11 @@
   display: grid;
   grid-template-columns: var(--tl-time-w) var(--tl-pin-w) 1fr var(--tl-check-w);
   gap: var(--tl-gap);
-  align-items: center;
+  /* было: align-items: center; */
+  align-items: stretch;        /* колонка пина на всю высоту строки */
   padding: 10px 0;
   position: relative;
+  min-height: calc(var(--tl-pin-size) + 12px); /* чтобы было место для линий */
 }
 
 /* Левая колонка со временем */
@@ -48,9 +51,11 @@
 
 /* Кружок задачи */
 .tl-pin{
-  position: relative;                /* важно для ::before/::after */
-  display:flex; justify-content:center; align-items:center;
-  z-index: 2;                        /* выше линий-псевдоэлементов */
+  position: relative;
+  display: flex;
+  align-items: center;  /* центрируем круг внутри растянутой колонки */
+  justify-content: center;
+  z-index: 2;
 }
 .tl-pin-circle{
   width: var(--tl-pin-size); height: var(--tl-pin-size);
@@ -69,53 +74,46 @@
 .tl-gap-row .tl-pin::before{
   content: "";
   position: absolute;
-  left: calc(50% - 1px);     /* строго по центру кружка */
+  left: calc(50% - 1px);
   width: 2px;
-  z-index: 1;                /* под кружком, над фоном */
-  background: transparent;   /* переопределим ниже */
+  z-index: 1;
+  background: transparent;
 }
 
-/* ВЕРХ: от верха строки до (центр - радиус) */
-.tl-row[data-prev="task"] .tl-pin::before{
+/* ВЕРХ — от верха строки до (центр - радиус - зазор) */
+.tl-row[data-prev="task"] .tl-pin::before,
+.tl-row[data-prev="gap"]  .tl-pin::before{
   top: 0;
-  bottom: calc(50% + var(--tl-pin-size) / 2);
-  background: var(--tl-line-solid);
+  height: calc(50% - var(--tl-pin-size)/2 - var(--tl-line-clear));
 }
-.tl-row[data-prev="gap"] .tl-pin::before{
-  top: 0;
-  bottom: calc(50% + var(--tl-pin-size) / 2);
+.tl-row[data-prev="task"] .tl-pin::before{ background: var(--tl-line-solid); }
+.tl-row[data-prev="gap"]  .tl-pin::before{
   background-image: repeating-linear-gradient(
-    to bottom,
-    var(--tl-line-dash) 0 6px,
-    transparent 6px 12px
+    to bottom, var(--tl-line-dash) 0 6px, transparent 6px 12px
   );
 }
 .tl-row[data-prev="none"] .tl-pin::before{ display:none; }
 
-/* НИЗ: от (центр + радиус) до низа строки */
-.tl-row[data-next="task"] .tl-pin::after{
-  top: calc(50% + var(--tl-pin-size) / 2);
-  bottom: 0;
-  background: var(--tl-line-solid);
+/* НИЗ — от (центр + радиус + зазор) до низа строки */
+.tl-row[data-next="task"] .tl-pin::after,
+.tl-row[data-next="gap"]  .tl-pin::after{
+  top: calc(50% + var(--tl-pin-size)/2 + var(--tl-line-clear));
+  height: calc(50% - var(--tl-pin-size)/2 - var(--tl-line-clear));
 }
-.tl-row[data-next="gap"] .tl-pin::after{
-  top: calc(50% + var(--tl-pin-size) / 2);
-  bottom: 0;
+.tl-row[data-next="task"] .tl-pin::after{ background: var(--tl-line-solid); }
+.tl-row[data-next="gap"]  .tl-pin::after{
   background-image: repeating-linear-gradient(
-    to bottom,
-    var(--tl-line-dash) 0 6px,
-    transparent 6px 12px
+    to bottom, var(--tl-line-dash) 0 6px, transparent 6px 12px
   );
 }
 .tl-row[data-next="none"] .tl-pin::after{ display:none; }
 
-/* строка GAP — сплошной пунктир на всю высоту */
+/* GAP-строка — пунктир через всю её высоту */
 .tl-gap-row .tl-pin::before{
-  top: 0; bottom: 0;
+  top: 0;
+  height: 100%;
   background-image: repeating-linear-gradient(
-    to bottom,
-    var(--tl-line-dash) 0 6px,
-    transparent 6px 12px
+    to bottom, var(--tl-line-dash) 0 6px, transparent 6px 12px
   );
 }
 .tl-gap-row .tl-pin::after{ display:none; }
