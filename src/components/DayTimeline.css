@@ -148,6 +148,16 @@
   display: block;
 }
 
+/* Подпись «перерыв» между задачами */
+.tl-gap-label{
+  align-self: center;          /* по вертикали строго между задачами */
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tl-gap-color);
+  opacity: .9;
+  margin-left: 2px;            /* чуть ближе к линии */
+}
+
 /* Карточки */
 .tl-card{
   border: 1px solid var(--tl-border);

@@ -6,7 +6,13 @@ const fmtHM = (d) =>
   d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 const minsBetween = (a, b) => Math.max(0, Math.round((b - a) / 60000));
-const humanDur = (m) => (m < 60 ? `${m}m` : `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ""}`);
+const humanDur = (m) => {
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  if (h && mm) return `${h} ч ${mm} м`;
+  if (h) return `${h} ч`;
+  return `${mm} м`;
+};
 
 const GAP_MIN = 15; // порог «свободного окна»
 
@@ -91,8 +97,8 @@ export default function DayTimeline({ dateISO, tasks }) {
             ) : (
               <li key={`g-${r.afterId}`} className="tl-gap-row">
                 <div className="tl-time" />
-                <div className="tl-pin tl-gap-dot" />
-                <div className="tl-card tl-gap">{humanDur(r.minutes)}</div>
+                <div className="tl-pin" aria-hidden />
+                <div className="tl-gap-label">{humanDur(r.minutes)}</div>
                 <div className="tl-check tl-check-hidden" />
               </li>
             )
