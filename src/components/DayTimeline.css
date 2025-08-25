@@ -17,7 +17,7 @@
   --tl-text-dim: rgba(255,255,255,.78);
   --tl-text-faint: rgba(255,255,255,.62);
 
-  --tl-line-solid: rgba(255,255,255,.28);
+  --tl-line-solid: rgba(255,255,255,.42);
   --tl-line-dash:  rgba(255,255,255,.22);
   --tl-line-clear: 4px;     /* отступ линии от края круга */
 }
@@ -80,40 +80,44 @@
   background: transparent;
 }
 
-/* ВЕРХ — от верха строки до (центр - радиус - зазор) */
-.tl-row[data-prev="task"] .tl-pin::before,
-.tl-row[data-prev="gap"]  .tl-pin::before{
+/* ВЕРХ — тип линии берём из data-prev-conn */
+.tl-row[data-prev-conn="solid"] .tl-pin::before,
+.tl-row[data-prev-conn="dashed"] .tl-pin::before{
   top: 0;
   height: calc(50% - var(--tl-pin-size)/2 - var(--tl-line-clear));
 }
-.tl-row[data-prev="task"] .tl-pin::before{ background: var(--tl-line-solid); }
-.tl-row[data-prev="gap"]  .tl-pin::before{
+.tl-row[data-prev-conn="solid"] .tl-pin::before{
+  background: var(--tl-line-solid);
+}
+.tl-row[data-prev-conn="dashed"] .tl-pin::before{
   background-image: repeating-linear-gradient(
-    to bottom, var(--tl-line-dash) 0 6px, transparent 6px 12px
+    to bottom, var(--tl-line-dash) 0 8px, transparent 8px 16px
   );
 }
-.tl-row[data-prev="none"] .tl-pin::before{ display:none; }
+.tl-row[data-prev-conn="none"] .tl-pin::before{ display: none; }
 
-/* НИЗ — от (центр + радиус + зазор) до низа строки */
-.tl-row[data-next="task"] .tl-pin::after,
-.tl-row[data-next="gap"]  .tl-pin::after{
+/* НИЗ — тип линии берём из data-next-conn */
+.tl-row[data-next-conn="solid"] .tl-pin::after,
+.tl-row[data-next-conn="dashed"] .tl-pin::after{
   top: calc(50% + var(--tl-pin-size)/2 + var(--tl-line-clear));
   height: calc(50% - var(--tl-pin-size)/2 - var(--tl-line-clear));
 }
-.tl-row[data-next="task"] .tl-pin::after{ background: var(--tl-line-solid); }
-.tl-row[data-next="gap"]  .tl-pin::after{
+.tl-row[data-next-conn="solid"] .tl-pin::after{
+  background: var(--tl-line-solid);
+}
+.tl-row[data-next-conn="dashed"] .tl-pin::after{
   background-image: repeating-linear-gradient(
-    to bottom, var(--tl-line-dash) 0 6px, transparent 6px 12px
+    to bottom, var(--tl-line-dash) 0 8px, transparent 8px 16px
   );
 }
-.tl-row[data-next="none"] .tl-pin::after{ display:none; }
+.tl-row[data-next-conn="none"] .tl-pin::after{ display: none; }
 
 /* GAP-строка — пунктир через всю её высоту */
 .tl-gap-row .tl-pin::before{
   top: 0;
   height: 100%;
   background-image: repeating-linear-gradient(
-    to bottom, var(--tl-line-dash) 0 6px, transparent 6px 12px
+    to bottom, var(--tl-line-dash) 0 8px, transparent 8px 16px
   );
 }
 .tl-gap-row .tl-pin::after{ display:none; }

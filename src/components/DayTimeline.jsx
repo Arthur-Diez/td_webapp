@@ -8,27 +8,42 @@ const fmtHM = (d) =>
 const minsBetween = (a, b) => Math.max(0, Math.round((b - a) / 60000));
 const humanDur = (m) => (m < 60 ? `${m}m` : `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ""}`);
 
+const GAP_MIN = 15; // порог «свободного окна»
+
 export default function DayTimeline({ dateISO, tasks }) {
-  // задачи со временем
+  // только задачи со временем
   const timed = tasks
     .filter((t) => !t.all_day && t.start_dt)
     .map((t) => ({ ...t, start: new Date(t.start_dt), end: t.end_dt ? new Date(t.end_dt) : null }))
     .sort((a, b) => a.start - b.start);
 
-  // задачи на весь день
   const allDay = tasks.filter((t) => t.all_day);
 
-  // ряды таймлайна: task + gap
+  // строим список строк: task + (вставляем gap после task, если разрыв >= GAP_MIN)
   const rows = [];
   for (let i = 0; i < timed.length; i++) {
     const cur = timed[i];
-    rows.push({ kind: "task", t: cur });
-
-    const curEnd = cur.end || cur.start;
+    const prev = timed[i - 1];
     const next = timed[i + 1];
-    if (next) {
-      const gap = minsBetween(curEnd, next.start);
-      if (gap >= 15) rows.push({ kind: "gap", minutes: gap, afterId: cur.id });
+
+    const prevEnd = prev ? (prev.end || prev.start) : null;
+    const nextStart = next ? next.start : null;
+
+    const prevConn =
+      !prev ? "none" : minsBetween(prevEnd, cur.start) < GAP_MIN ? "solid" : "dashed";
+
+    const nextConn =
+      !next ? "none" : minsBetween(cur.end || cur.start, nextStart) < GAP_MIN ? "solid" : "dashed";
+
+    rows.push({ kind: "task", t: cur, prevConn, nextConn });
+
+    // вставляем визуальный gap-ряд (карточку «свободно») только если разрыв заметный
+    if (next && nextConn === "dashed") {
+      rows.push({
+        kind: "gap",
+        minutes: minsBetween(cur.end || cur.start, next.start),
+        afterId: cur.id,
+      });
     }
   }
 
@@ -40,49 +55,48 @@ export default function DayTimeline({ dateISO, tasks }) {
         <ul className="tl-list">
           {!hasTimed && <li className="tl-empty">Нет задач с указанным временем.</li>}
 
-          {rows.map((r, idx) => {
-            const prevKind = rows[idx - 1]?.kind ?? "none";
-            const nextKind = rows[idx + 1]?.kind ?? "none";
+          {rows.map((r, idx) =>
+            r.kind === "task" ? (
+              <li
+                key={`t-${r.t.id}`}
+                className="tl-row"
+                data-prev-conn={r.prevConn}
+                data-next-conn={r.nextConn}
+              >
+                <div className="tl-time">
+                  <div>{fmtHM(r.t.start)}</div>
+                  {r.t.end && r.t.end.getTime() !== r.t.start.getTime() && (
+                    <div className="tl-time-bottom">{fmtHM(r.t.end)}</div>
+                  )}
+                </div>
 
-            if (r.kind === "task") {
-              return (
-                <li key={`t-${r.t.id}`} className="tl-row" data-prev={prevKind} data-next={nextKind}>
-                  <div className="tl-time">
-                    <div>{fmtHM(r.t.start)}</div>
-                    {r.t.end && r.t.end.getTime() !== r.t.start.getTime() && (
-                      <div className="tl-time-bottom">{fmtHM(r.t.end)}</div>
-                    )}
+                <div className="tl-pin">
+                  <div className="tl-pin-circle">{r.t.icon || "@"}</div>
+                </div>
+
+                <div className="tl-card">
+                  <div className="tl-meta">
+                    {r.t.end
+                      ? `${fmtHM(r.t.start)} – ${fmtHM(r.t.end)} (${humanDur(
+                          minsBetween(r.t.start, r.t.end)
+                        )})`
+                      : fmtHM(r.t.start)}
                   </div>
+                  <div className="tl-title">{r.t.title}</div>
+                  {r.t.from_name && <div className="tl-from">от {r.t.from_name}</div>}
+                </div>
 
-                  <div className="tl-pin">
-                    <div className="tl-pin-circle">{r.t.icon || "@"}</div>
-                  </div>
-
-                  <div className="tl-card">
-                    <div className="tl-meta">
-                      {r.t.end
-                        ? `${fmtHM(r.t.start)} – ${fmtHM(r.t.end)} (${humanDur(minsBetween(r.t.start, r.t.end))})`
-                        : fmtHM(r.t.start)}
-                    </div>
-                    <div className="tl-title">{r.t.title}</div>
-                    {r.t.from_name && <div className="tl-from">от {r.t.from_name}</div>}
-                  </div>
-
-                  <div className="tl-check" aria-hidden />
-                </li>
-              );
-            }
-
-            // GAP
-            return (
-              <li key={`g-${r.afterId}`} className="tl-gap-row" data-prev={prevKind} data-next={nextKind}>
+                <div className="tl-check" aria-hidden />
+              </li>
+            ) : (
+              <li key={`g-${r.afterId}`} className="tl-gap-row">
                 <div className="tl-time" />
                 <div className="tl-pin tl-gap-dot" />
                 <div className="tl-card tl-gap">{humanDur(r.minutes)}</div>
                 <div className="tl-check tl-check-hidden" />
               </li>
-            );
-          })}
+            )
+          )}
         </ul>
       </div>
 
