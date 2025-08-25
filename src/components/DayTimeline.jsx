@@ -63,7 +63,7 @@ export default function DayTimeline({ dateISO, tasks }) {
                 data-prev-conn={r.prevConn}
                 data-next-conn={r.nextConn}
               >
-                <div className="tl-time">
+                <div className={`tl-time ${r.t.end ? 'tl-time--range' : 'tl-time--single'}`}>
                   <div>{fmtHM(r.t.start)}</div>
                   {r.t.end && r.t.end.getTime() !== r.t.start.getTime() && (
                     <div className="tl-time-bottom">{fmtHM(r.t.end)}</div>

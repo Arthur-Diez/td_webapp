@@ -2,7 +2,7 @@
 
 /* ===== Управляем сдвигом влево через переменные ===== */
 :root{
-  --tl-time-w: 36px;         /* колонка времени — уже → всё левее */
+  --tl-time-w: 30px;         /* колонка времени — уже → всё левее */
   --tl-pin-w: 46px;          /* колонка с кружком */
   --tl-check-w: 30px;
   --tl-gap: 10px;
@@ -20,6 +20,7 @@
   --tl-line-solid: rgba(255,255,255,.42);
   --tl-line-dash:  rgba(255,255,255,.22);
   --tl-line-clear: 4px;     /* отступ линии от края круга */
+  --tl-line-w: 2px;       /* толщина соединителя, можно 3px */
 }
 
 .tl{ max-width: 880px; margin: 0 auto; padding: 0 4px 24px; }
@@ -40,14 +41,31 @@
   min-height: calc(var(--tl-pin-size) + 12px); /* чтобы было место для линий */
 }
 
-/* Левая колонка со временем */
+/* Время — одна колонка одной высоты с кругом, чтобы совпадать по вертикали */
 .tl-time{
-  text-align: right;
+  align-self: center;                 /* центрируем «блок времени» в строке */
+  min-height: var(--tl-pin-size);     /* высота = диаметр круга */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;            /* слева, «вплотную» */
+  padding-left: 0;                    /* без внутренних отступов */
+  text-align: left;                   /* слева */
   line-height: 1.1;
   font-size: 12px;
   color: var(--tl-text-dim);
 }
-.tl-time-bottom{ margin-top: 4px; color: var(--tl-text-faint); }
+
+/* Одно время — по центру уровня круга */
+.tl-time--single{ justify-content: center; }
+
+/* Интервал — разнесём по верхнему/нижнему краю блока времени */
+.tl-time--range{ justify-content: space-between; }
+
+/* нижнее время у интервала — лишний зазор не нужен */
+.tl-time--range .tl-time-bottom{ margin-top: 0; }
+
+/* если где-то остался margin — нейтрализуем на всякий случай */
+.tl-time-bottom{ margin-top: 0; color: var(--tl-text-faint); }
 
 /* Кружок задачи */
 .tl-pin{
@@ -74,8 +92,8 @@
 .tl-gap-row .tl-pin::before{
   content: "";
   position: absolute;
-  left: calc(50% - 1px);
-  width: 2px;
+  left: calc(50% - var(--tl-line-w)/2);  /* было calc(50% - 1px) */
+  width: var(--tl-line-w);               /* было 2px */
   z-index: 1;
   background: transparent;
 }
