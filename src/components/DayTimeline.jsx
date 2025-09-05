@@ -27,29 +27,46 @@ export default function DayTimeline({ dateISO, tasks }) {
 
   // строим список строк: task + (вставляем gap после task, если разрыв >= GAP_MIN)
   const rows = [];
+  let suppressPrevForNext = false;
+
   for (let i = 0; i < timed.length; i++) {
     const cur = timed[i];
     const prev = timed[i - 1];
     const next = timed[i + 1];
 
-    const prevEnd = prev ? (prev.end || prev.start) : null;
+    const prevEnd   = prev ? (prev.end || prev.start) : null;
     const nextStart = next ? next.start : null;
 
-    const prevConn =
-      !prev ? "none" : minsBetween(prevEnd, cur.start) < GAP_MIN ? "solid" : "dashed";
+    // prevConn: если до этого вставили GAP — соединитель у следующей задачи не рисуем
+    let prevConn = "none";
+    if (prev) {
+      if (suppressPrevForNext) {
+        prevConn = "none";
+      } else {
+        prevConn = minsBetween(prevEnd, cur.start) < GAP_MIN ? "solid" : "none";
+      }
+    }
 
-    const nextConn =
-      !next ? "none" : minsBetween(cur.end || cur.start, nextStart) < GAP_MIN ? "solid" : "dashed";
+    // nextConn и необходимость GAP
+    let nextConn = "none";
+    let gapMinutes = 0;
+    if (next) {
+      gapMinutes = minsBetween(cur.end || cur.start, nextStart);
+      if (gapMinutes < GAP_MIN) {
+        nextConn = "solid";            // вплотную — сплошная
+        suppressPrevForNext = false;
+      } else {
+        nextConn = "none";             // пунктир рисуем ТОЛЬКО в GAP-строке
+        suppressPrevForNext = true;    // у следующей задачи prevConn = none
+      }
+    } else {
+      suppressPrevForNext = false;
+    }
 
     rows.push({ kind: "task", t: cur, prevConn, nextConn });
 
-    // вставляем визуальный gap-ряд (карточку «свободно») только если разрыв заметный
-    if (next && nextConn === "dashed") {
-      rows.push({
-        kind: "gap",
-        minutes: minsBetween(cur.end || cur.start, next.start),
-        afterId: cur.id,
-      });
+    if (next && gapMinutes >= GAP_MIN) {
+      rows.push({ kind: "gap", minutes: gapMinutes, afterId: cur.id });
     }
   }
 

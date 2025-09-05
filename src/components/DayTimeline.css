@@ -99,44 +99,52 @@
 }
 
 /* ВЕРХ — спускаемся до верхнего паддинга предыдущей строки */
-.tl-row[data-prev-conn="solid"] .tl-pin::before,
-.tl-row[data-prev-conn="dashed"] .tl-pin::before{
-  top: calc(-1 * var(--tl-row-vpad)); /* ⬅️ выходим выше строки */
+.tl-row[data-prev-conn="solid"] .tl-pin::before{
+  top: calc(-1 * var(--tl-row-vpad));
   height: calc(
     50% - var(--tl-pin-size)/2 - var(--tl-line-clear) + var(--tl-row-vpad)
   );
 }
-.tl-row[data-prev-conn="solid"]  .tl-pin::before{ background: var(--tl-line-solid); }
-.tl-row[data-prev-conn="dashed"] .tl-pin::before{
-  background-image: repeating-linear-gradient(
-    to bottom, var(--tl-line-dash) 0 8px, transparent 8px 16px
-  );
-}
-.tl-row[data-prev-conn="none"]   .tl-pin::before{ display:none; }
 
 /* НИЗ — дотягиваемся до нижнего паддинга текущей строки */
-.tl-row[data-next-conn="solid"] .tl-pin::after,
-.tl-row[data-next-conn="dashed"] .tl-pin::after{
+.tl-row[data-next-conn="solid"] .tl-pin::after{
   top: calc(50% + var(--tl-pin-size)/2 + var(--tl-line-clear));
   height: calc(
     50% - var(--tl-pin-size)/2 - var(--tl-line-clear) + var(--tl-row-vpad)
   );
 }
 .tl-row[data-next-conn="solid"]  .tl-pin::after{ background: var(--tl-line-solid); }
+/* Пунктир у самих задач больше не рисуем — только у GAP-строки */
+.tl-row[data-prev-conn="dashed"] .tl-pin::before,
 .tl-row[data-next-conn="dashed"] .tl-pin::after{
-  background-image: repeating-linear-gradient(
-    to bottom, var(--tl-line-dash) 0 8px, transparent 8px 16px
-  );
+  display: none;
 }
 .tl-row[data-next-conn="none"]   .tl-pin::after{ display:none; }
 
-/* GAP-строка — пунктир через всю её высоту */
+/* GAP-строка — пунктир между кругами с равным отступом сверху/снизу */
 .tl-gap-row .tl-pin::before{
-  top: calc(-1 * var(--tl-row-vpad));                   /* ⬅️ выше строки */
-  height: calc(100% + 2 * var(--tl-row-vpad));         /* ⬅️ и ниже строки */
-  background-image: repeating-linear-gradient(
-    to bottom, var(--tl-line-dash) 0 8px, transparent 8px 16px
+  content:"";
+  position:absolute;
+  left: calc(50% - var(--tl-line-w)/2);
+  width: var(--tl-line-w);
+  z-index: 1;
+
+  /* одинаковый зазор от обоих кружков:
+     1/2 круга + вертикальный паддинг строки + line-clear */
+  top: calc(-1 * (var(--tl-row-vpad) + var(--tl-pin-size)/2 + var(--tl-line-clear)));
+  height: calc(
+    100% + 2 * (var(--tl-row-vpad) + var(--tl-pin-size)/2 + var(--tl-line-clear))
   );
+
+  /* ровный пунктир: 8px штрих / 8px пробел, выровнен по центру */
+  background-image: linear-gradient(
+    to bottom,
+    var(--tl-line-dash) 0 50%,
+    transparent 0 100%
+  );
+  background-size: var(--tl-line-w) 16px;
+  background-repeat: repeat-y;
+  background-position: left center;
 }
 .tl-gap-row .tl-pin::after{ display:none; }
 
@@ -146,16 +154,6 @@
   width: 10px; height: 10px; border-radius: 50%;
   background: var(--tl-text-faint);
   display: block;
-}
-
-/* Подпись «перерыв» между задачами */
-.tl-gap-label{
-  align-self: center;          /* по вертикали строго между задачами */
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--tl-gap-color);
-  opacity: .9;
-  margin-left: 2px;            /* чуть ближе к линии */
 }
 
 /* Карточки */
