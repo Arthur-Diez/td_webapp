@@ -4,7 +4,6 @@ import WebApp from '@twa-dev/sdk';
 
 import CalendarHeader from './components/CalendarHeader';
 import WeekStrip from './components/WeekStrip';
-import FloatingButtons from './components/FloatingButtons';
 import { applyTelegramTheme } from './utils/Theme';
 import { fetchUserTimezoneOffset } from './utils/timezone';
 import Tasks from './components/Tasks';
