@@ -1,48 +1,63 @@
 // src/components/WheelPicker.jsx
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import "./WheelPicker.css";
 
-/**
- * Простое «колесо» с прокруткой и snap. Высота строки 36px.
- * props:
- *  - values: [{label, value}]
- *  - value: текущее value
- *  - onChange: (value) => void
- */
-export default function WheelPicker({ values, value, onChange, ariaLabel }) {
-  const ref = useRef(null);
-  const ITEM_H = 36;
+const ITEM_H = 36; // высота строки (должна совпадать с CSS)
 
-  // прокрутить к текущему значению
+export default function WheelPicker({
+  values = [],            // [{ label, value }]
+  value,                  // текущее value
+  onChange,               // (value) => void
+  ariaLabel,
+}) {
+  const viewportRef = useRef(null);
+  const debounceRef = useRef(null);
+
+  // Прокрутить к текущему значению при монтировании и при смене value извне
   useEffect(() => {
-    const idx = Math.max(0, values.findIndex(v => v.value === value));
-    if (ref.current) ref.current.scrollTo({ top: idx * ITEM_H, behavior: "auto" });
-    // eslint-disable-next-line
-  }, []);
+    const el = viewportRef.current;
+    if (!el) return;
+    const idx = Math.max(0, values.findIndex((v) => v.value === value));
+    el.scrollTop = idx * ITEM_H;
+  }, [value, values]);
 
-  // подщёлкивать к ближайшему элементу
-  const handleScroll = () => {
-    if (!ref.current) return;
-    const st = ref.current.scrollTop;Ы
-    const idx = Math.round(st / ITEM_H);
+  // Снап к ближайшему элементу и вызов onChange
+  const snapAndChange = useCallback(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+
+    const idx = Math.round(el.scrollTop / ITEM_H);
     const clamped = Math.min(values.length - 1, Math.max(0, idx));
-    const val = values[clamped]?.value;
-    if (val !== undefined) onChange(val);
+
+    const top = clamped * ITEM_H;
+    el.scrollTo({ top, behavior: "smooth" });
+
+    const nextVal = values[clamped]?.value;
+    if (nextVal !== undefined && nextVal !== value) {
+      onChange?.(nextVal);
+    }
+  }, [values, value, onChange]);
+
+  // Дебаунс скролла
+  const onScroll = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(snapAndChange, 80);
   };
 
   return (
     <div className="wheel" aria-label={ariaLabel}>
-      <div className="wheel-viewport" ref={ref} onScroll={() => {
-        // debounce 120ms
-        if (ref.current._t) clearTimeout(ref.current._t);
-        ref.current._t = setTimeout(handleScroll, 120);
-      }}>
+      <div className="wheel-viewport" ref={viewportRef} onScroll={onScroll}>
+        {/* отступы сверху/снизу, чтобы центральная линия подсветки совпадала */}
+        <div className="wheel-spacer" />
         {values.map((v) => (
-          <div className="wheel-item" key={String(v.value)}>
+          <div className="wheel-item" key={String(v.value)} style={{ height: ITEM_H }}>
             {v.label}
           </div>
         ))}
+        <div className="wheel-spacer" />
       </div>
+
+      {/* маски и линия выделения — как в твоём CSS */}
       <div className="wheel-mask" />
       <div className="wheel-focus" />
     </div>
