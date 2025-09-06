@@ -10,3 +10,14 @@ export async function getTasksForDate(telegramId, date, signal) {
   if (!Array.isArray(data)) throw new Error(data?.error || 'Bad response');
   return data;
 }
+
+// API метод добавления задачи из мини-приложения 
+export async function createTask(payload) {
+  const res = await fetch(api('/add_task'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}

@@ -1,10 +1,15 @@
-import React from 'react';
-import './FloatingButtons.css';
+// src/components/FloatingButtons.js
+import React from "react";
 
-export default function FloatingButtons({ onAdd = () => {} }) {
+export default function FloatingButtons({ onPlus }) {
   return (
-    <button className="fab" onClick={onAdd} aria-label="Добавить задачу">
-      <span className="fab-plus">+</span>
+    <button
+      className="fab-button"
+      type="button"
+      aria-label="Добавить задачу"
+      onClick={onPlus}
+    >
+      +
     </button>
   );
 }

@@ -9,11 +9,13 @@ import { fetchUserTimezoneOffset } from './utils/timezone';
 import Tasks from './components/Tasks';
 import BottomTabBar from './components/BottomTabBar';
 import FloatingButtons from './components/FloatingButtons'; // оставляем, но теперь это новый FAB
+import AddTaskSheet from './components/AddTaskSheet';
 
 import './App.css';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [debugText, setDebugText] = useState('⏳ Инициализация...');
   const [consoleData, setConsoleData] = useState('🧾 Консоль запущена...');
   const [activeTab, setActiveTab] = useState('tasks');
@@ -86,7 +88,7 @@ export default function App() {
       <CalendarHeader date={currentDate} onTabChange={setActiveTab} />
       <WeekStrip date={selectedDate} onDateSelect={setSelectedDate} />
 
-      <main className="main-content">
+      <main className="main-content app-content">
         {activeTab === 'tasks'   && (
           <Tasks
             date={dateStr}               // <-- ЛОКАЛЬНАЯ дата
@@ -121,7 +123,13 @@ export default function App() {
       </main>
 
       <BottomTabBar active={activeTab} onChange={setActiveTab} />
-      <FloatingButtons onAdd={() => console.log('TODO: открыть экран создания задачи')} />
+      <FloatingButtons onPlus={() => setIsAddOpen(true)} />
+        <AddTaskSheet
+          open={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          telegramId={userId}
+          selectedDate={selectedDate}
+        />
     </div>
   );
 }

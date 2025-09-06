@@ -1,0 +1,36 @@
+.wheel {
+  position: relative;
+  width: 64px;
+  height: 5 * 36px; /* визуально 5 строк */
+}
+.wheel-viewport {
+  height: 180px;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.wheel-viewport::-webkit-scrollbar { display: none; }
+
+.wheel-item {
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  font-size: 16px;
+  scroll-snap-align: center;
+  color: var(--tg-fg);
+  opacity: .7;
+}
+.wheel-mask {
+  pointer-events: none;
+  position: absolute; inset: 0;
+  background: linear-gradient(var(--tg-bg), rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, var(--tg-bg));
+}
+.wheel-focus {
+  pointer-events: none;
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  transform: translateY(-50%);
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px dashed rgba(0,0,0,.12);
+}
