@@ -1,41 +1,24 @@
-.floating-container {
+:root{
+  --fab-size: 56px;
+  --fab-gap: 12px;
+  --fab-accent: #ff6b6b; /* временно */
+}
+
+.fab{
   position: fixed;
-  bottom: 20px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 20px;
-  z-index: 999;
+  right: 16px;
+  bottom: calc(var(--tabbar-h) + var(--fab-gap) + env(safe-area-inset-bottom, 0px));
+  width: var(--fab-size); height: var(--fab-size);
+  border-radius: 999px; border: 0;
+  background: var(--fab-accent); color: #fff;
+  display: grid; place-items: center;
+  box-shadow: 0 10px 22px rgba(0,0,0,.28);
+  z-index: 1200;
 }
 
-.left-buttons {
-  display: flex;
-  gap: 12px;
+.fab-plus{
+  font-size: 28px; line-height: 1; transform: translateY(-1px);
 }
 
-.right-button {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.circle-button {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: none;
-  background-color: #ff8888;
-  color: white;
-  font-size: 24px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.circle-button:hover {
-  background-color: #ff6a6a;
-}
-
-.circle-button.main {
-  background-color: #ff7777;
-}
+/* если остались старые стили мини-кнопок, можно удалить:
+   .fab-mini, .fab-mini-left, .fab-mini-right и т.п. */

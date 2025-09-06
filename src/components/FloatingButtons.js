@@ -1,16 +1,10 @@
 import React from 'react';
 import './FloatingButtons.css';
 
-export default function FloatingButtons() {
+export default function FloatingButtons({ onAdd = () => {} }) {
   return (
-    <div className="floating-container">
-      <div className="left-buttons">
-        <button className="circle-button">👤</button>
-        <button className="circle-button">👥</button>
-      </div>
-      <div className="right-button">
-        <button className="circle-button main">＋</button>
-      </div>
-    </div>
+    <button className="fab" onClick={onAdd} aria-label="Добавить задачу">
+      <span className="fab-plus">+</span>
+    </button>
   );
 }

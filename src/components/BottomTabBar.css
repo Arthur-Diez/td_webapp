@@ -1,30 +1,47 @@
-.bottom-tab-bar {
+:root{
+  --tabbar-h: 64px;
+  --tabbar-bg: var(--tg-bg, #101115);
+  --tabbar-border: rgba(255,255,255,.12);
+  --tabbar-muted: rgba(255,255,255,.72);
+  --tabbar-active: #ff6b6b;   /* временный акцент */
+}
+
+.bottom-tabbar{
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: var(--tg-btn-bg);
+  left: 0; right: 0; bottom: 0;
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--tabbar-bg);
+  border-top: 1px solid var(--tabbar-border);
   display: flex;
   justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid var(--tg-border);
-  z-index: 900;
+  z-index: 1000;
 }
 
-.bottom-tab-bar button {
-  background: none;
-  border: none;
-  font-size: 22px;
-  color: var(--tg-fg);
-  opacity: 0.6;
-  transition: 0.2s;
+.tab-btn{
+  flex: 1 1 25%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: none; border: 0; color: var(--tabbar-muted);
+  padding: 6px 0 8px; gap: 4px;
+  font: 500 12px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-.bottom-tab-bar button.active {
-  opacity: 1;
-  color: var(--tg-accent);
+.icon-wrap{
+  width: 36px; height: 36px; border-radius: 999px;
+  display: grid; place-items: center;
+  transition: transform .12s ease, box-shadow .12s ease, color .12s ease;
 }
 
-.bottom-tab-bar button:focus {
-  outline: none;
+.tab-btn.active .icon-wrap{
+  box-shadow: 0 0 0 2px var(--tabbar-active) inset;
+  color: #fff;
 }
+
+.tab-btn:active .icon-wrap{ transform: scale(.96); }
+
+.tab-btn .icon{
+  width: 22px; height: 22px;
+  stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.tab-btn .label{ margin-top: 2px; }

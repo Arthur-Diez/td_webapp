@@ -28,25 +28,6 @@ body, html {
   transition: all 0.3s ease;
 }
 
-/* Плавающая кнопка "+" */
-.fab-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background-color: var(--tg-accent);
-  color: white;
-  font-size: 30px;
-  border: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
 .icon-btn {
   font-size: 20px;
   background: none;
@@ -60,4 +41,9 @@ body, html {
 
 .icon-btn:hover {
   opacity: 1;
+}
+
+/* чтобы контент не перекрывался новой нижней панелью */
+.app-content{
+  padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom, 0px));
 }

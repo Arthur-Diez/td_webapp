@@ -8,8 +8,8 @@ import FloatingButtons from './components/FloatingButtons';
 import { applyTelegramTheme } from './utils/Theme';
 import { fetchUserTimezoneOffset } from './utils/timezone';
 import Tasks from './components/Tasks';
-import Calendar from './components/Calendar';
-import Profile from './components/Profile';
+import BottomTabBar from './components/BottomTabBar';
+import FloatingButtons from './components/FloatingButtons'; // оставляем, но теперь это новый FAB
 
 import './App.css';
 
@@ -88,19 +88,21 @@ export default function App() {
       <WeekStrip date={selectedDate} onDateSelect={setSelectedDate} />
 
       <main className="main-content">
-        {activeTab === 'tasks' && (
+        {activeTab === 'tasks'   && (
           <Tasks
-            date={dateStr}                // <-- ЛОКАЛЬНАЯ дата
+            date={dateStr}               // <-- ЛОКАЛЬНАЯ дата
             telegramId={userId}
             setConsoleData={setConsoleData} // <-- передаём логгер
           />
         )}
-        {activeTab === 'calendar' && <Calendar />}
-        {activeTab === 'profile' && <Profile />}
-        {activeTab === 'settings' && (
-          <p style={{ textAlign: 'center', marginTop: 40 }}>
-            🛠 Раздел настроек будет позже
-          </p>
+        {activeTab === 'groups'  && (
+          <p style={{ textAlign: 'center', marginTop: 40 }}>👥 Группы — скоро ✨</p>
+        )}
+        {activeTab === 'friends' && (
+          <p style={{ textAlign: 'center', marginTop: 40 }}>🧑‍🤝‍🧑 Друзья — скоро ✨</p>
+        )}
+        {activeTab === 'focus'   && (
+          <p style={{ textAlign: 'center', marginTop: 40 }}>🎯 Фокус — скоро ✨</p>
         )}
 
         <pre
@@ -119,7 +121,8 @@ export default function App() {
         </pre>
       </main>
 
-      <FloatingButtons />
+      <BottomTabBar active={activeTab} onChange={setActiveTab} />
+      <FloatingButtons onAdd={() => console.log('TODO: открыть экран создания задачи')} />
     </div>
   );
 }
