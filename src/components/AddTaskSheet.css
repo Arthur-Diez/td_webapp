@@ -35,7 +35,7 @@
 }
 
 /* строки/секции */
-.section{ margin: 12px 0; }
+.section{ margin: 20px 0; }
 .section-head{ display: flex; align-items: center; justify-content: space-between; }
 .section-title{ font-weight: 700; margin-bottom: 8px; }
 .link{ background: none; border: none; color: #f08a8a; font-weight: 600; }
@@ -107,4 +107,55 @@
 
 .date-btn{
   border: none; background: none; color: #f08a8a; font-weight: 600;
+}
+
+/* больше «воздуха» между секциями */
+.addpanel-section { margin-top: 22px; }
+.addpanel-section + .addpanel-section { margin-top: 30px; }
+
+/* заголовок секции: слева title, справа линк */
+.addpanel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.addpanel-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.addpanel-hint {
+  margin-top: 8px;
+  opacity: .7;
+  font-size: 13px;
+}
+
+/* 4 колесика времени прямо в секции «Когда?» */
+.time-inline {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(64px, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+/* чуть плавнее анимация нижнего шита при перетаскивании */
+.inner-sheet { will-change: transform; }
+
+/* компактный режим для WheelPicker */
+.wheel.wheel--compact { height: 120px; }
+.wheel.wheel--compact .wheel-viewport { height: 120px; }
+.wheel.wheel--compact .wheel-item { height: 32px; line-height: 32px; }
+
+/* верхняя «ручка» у нижнего окна + свайп */
+.bs-handle {
+  width: 56px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.25);
+  margin: 8px auto 12px;
+  touch-action: none;
 }
