@@ -1,69 +1,38 @@
 /* src/components/WheelPicker.css */
-:root {
-  --wheel-item-h: 36px;
-  --wheel-viewport-h: 144px; /* видно ~4 строки + фокусную */
-}
-
-/* контейнер колеса */
-.wheel {
-  position: relative;
-  width: 72px;
-}
-
-/* прокручиваемая область */
+.wheel { position: relative; width: 72px; }
 .wheel-viewport {
-  height: var(--wheel-viewport-h);
+  height: 180px;                 /* 5 видимых строк по 36px */
   overflow-y: auto;
   scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
 }
-
-/* скрыть полосы прокрутки */
 .wheel-viewport::-webkit-scrollbar { display: none; }
 
-/* элементы */
+.wheel-spacer { height: 72px; }  /* чтобы активная строка была по центру */
 .wheel-item {
-  height: var(--wheel-item-h);
-  line-height: var(--wheel-item-h);
-  text-align: center;
-  font-size: 16px;
-  color: var(--tg-fg);
-  opacity: .85;
-  scroll-snap-align: center;
+  height: 36px; line-height: 36px;
+  text-align: center; font-size: 16px;
+  scroll-snap-align: center; color: var(--tg-fg); opacity: .8;
 }
-
-/* отступы сверху/снизу, чтобы крайние элементы могли попасть в центральную линию */
-.wheel-spacer {
-  height: calc((var(--wheel-viewport-h) - var(--wheel-item-h)) / 2);
-  flex: 0 0 calc((var(--wheel-viewport-h) - var(--wheel-item-h)) / 2);
-}
-
-/* маска и линия фокуса — не перехватывают клики/тач */
-.wheel-mask,
-.wheel-focus { pointer-events: none; }
 
 .wheel-mask {
+  pointer-events: none;
   position: absolute; inset: 0;
-  background: linear-gradient(
-    var(--tg-bg), rgba(0,0,0,0) 30%,
-    rgba(0,0,0,0) 70%, var(--tg-bg)
-  );
+  background: linear-gradient(var(--tg-bg), rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, var(--tg-bg));
 }
-
 .wheel-focus {
-  position: absolute;
-  left: 0; right: 0; top: 50%;
+  pointer-events: none;
+  position: absolute; left: 6px; right: 6px; top: 50%;
   transform: translateY(-50%);
-  height: var(--wheel-item-h);
-  border-radius: 8px;
-  border: 1.5px dashed rgba(0,0,0,.12);
+  height: 36px; border-radius: 8px;
+  border: 1.5px dashed rgba(0,0,0,.15);
 }
 
-/* компактный вид для инлайн-колёс в секции «Когда?» */
-.time-inline .wheel { width: 72px; }
-.time-inline .wheel-viewport { height: 120px; }
-.time-inline .wheel-item { height: 36px; line-height: 36px; }
-.time-inline .wheel-focus { height: 36px; }
-.time-inline .wheel-spacer { height: calc((120px - 36px)/2); flex: 0 0 calc((120px - 36px)/2); }
+/* компактный режим (если захочешь) */
+.wheel.wheel--compact { width: 64px; }
+.wheel.wheel--compact .wheel-viewport { height: 144px; }
+
+/* подсветка «выбранного колеса» */
+.wheel--picked { outline: 2px solid #f08a8a; border-radius: 12px; }

@@ -7,11 +7,8 @@ import { createTask } from "../utils/api";
 const mm2 = (n) => String(n).padStart(2, "0");
 const hours = Array.from({ length: 24 }, (_, h) => ({ label: mm2(h), value: h }));
 
-// минуты для инлайн-панели (шаг 15м) и для детальной (00–59)
-const MINS15 = [0, 15, 30, 45].map((m) => ({ label: mm2(m), value: m }));
+// минуты: и в инлайне, и в подробном окне показываем 0..59
 const MINS60 = Array.from({ length: 60 }, (_, m) => ({ label: mm2(m), value: m }));
-// округление к ближайшей четверти (0/15/30/45) для отображения на инлайн-колёсах
-const nearestQuarter = (m) => (Math.round(m / 15) * 15) % 60;
 
 const DUR_PRESETS = [
   { label: "15m", m: 15 },
@@ -22,20 +19,28 @@ const DUR_PRESETS = [
 ];
 const COLORS = ["#F06292", "#FFB74D", "#FFD54F", "#AED581", "#64B5F6", "#81C784", "#BA68C8"];
 
+// helpers для шагов по четвертям и направления
+const nextQ = (m) => Math.floor(m / 15) * 15 + 15;           // 43 -> 60
+const prevQ = (m) => Math.floor(m / 15) * 15;                 // 43 -> 30
+const dirFromTo = (prev, cur) => {
+  const diff = (cur - prev + 60) % 60;                        // 0..59
+  if (diff === 0) return 0;
+  return diff <= 30 ? +1 : -1;                                // ближнее направление
+};
+
 export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }) {
   const [title, setTitle] = useState("");
   const [allDay, setAllDay] = useState(false);
 
   const now = new Date();
-  const baseDateProp = selectedDate || now; // из родителя
-  const [localDate, setLocalDate] = useState(baseDateProp); // локальная дата внутри формы
+  const baseDateProp = selectedDate || now;
+  const [localDate, setLocalDate] = useState(baseDateProp);
 
   const roundToQuarter = (d) => {
     const ms = 15 * 60 * 1000;
     return new Date(Math.ceil(d.getTime() / ms) * ms);
   };
 
-  // старт по умолчанию: ближайшая «четверть» сегодня, иначе 10:00
   const defStart = useMemo(() => {
     const d = new Date(baseDateProp);
     if (new Date().toDateString() === d.toDateString()) return roundToQuarter(new Date());
@@ -44,19 +49,18 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     // eslint-disable-next-line
   }, [open]);
 
-  const [sh, setSh] = useState(defStart.getHours()); // start hour
-  const [sm, setSm] = useState(defStart.getMinutes() - (defStart.getMinutes() % 15)); // start minutes (кратно 15)
-  const [duration, setDuration] = useState(15); // в минутах
+  const [sh, setSh] = useState(defStart.getHours());                  // час начала
+  const [sm, setSm] = useState(defStart.getMinutes());                // минуты начала (могут быть не кратно 15)
+  const [duration, setDuration] = useState(15);                       // мин
 
   const [color, setColor] = useState(COLORS[0]);
-  const [repeat, setRepeat] = useState("once"); // once|daily|weekly|monthly
+  const [repeat, setRepeat] = useState("once");
   const [notes, setNotes] = useState("");
   const [subtasks, setSubtasks] = useState([]);
 
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isDurPickerOpen, setIsDurPickerOpen] = useState(false);
 
-  // дата/время старта и конца (из локальной даты + ш/м)
   const startDate = useMemo(() => {
     const d = new Date(localDate);
     d.setHours(sh, sm, 0, 0);
@@ -71,27 +75,25 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   }, [startDate, duration, allDay]);
 
   const totalHuman = useMemo(() => {
-    const m = duration;
-    const h = Math.floor(m / 60),
-      mm = m % 60;
+    const m = duration, h = Math.floor(m / 60), mm = m % 60;
     if (h && mm) return `${h}ч ${mm}м`;
     if (h) return `${h}ч`;
     return `${mm}м`;
   }, [duration]);
 
-  // что показывать на ИНЛАЙН-колёсах (квартальные значения)
-const smInline = useMemo(() => nearestQuarter(sm), [sm]);
-const endInlineMin = useMemo(() => {
-  const end = new Date(startDate.getTime() + duration * 60000);
-  return nearestQuarter(end.getMinutes());
-}, [startDate, duration]);
+  // вычислить duration по конечному времени, учитывая переход на следующий день
+  const durationFromEnd = (endCandidate) => {
+    const end = new Date(endCandidate);
+    if (end <= startDate) end.setDate(end.getDate() + 1); // следующий день
+    return Math.max(1, Math.round((end - startDate) / 60000));
+  };
 
   // сброс при закрытии
   useEffect(() => {
     if (!open) {
       setTitle("");
       setAllDay(false);
-      setSm(defStart.getMinutes() - (defStart.getMinutes() % 15));
+      setSm(defStart.getMinutes());
       setSh(defStart.getHours());
       setDuration(15);
       setNotes("");
@@ -113,10 +115,7 @@ const endInlineMin = useMemo(() => {
 
   const handleSubmit = async () => {
     if (!telegramId) return;
-    if (!title.trim()) {
-      alert("Введите название задачи");
-      return;
-    }
+    if (!title.trim()) { alert("Введите название задачи"); return; }
     const dateISO = (d) => (d ? new Date(d).toISOString() : null);
 
     const payload = {
@@ -131,12 +130,54 @@ const endInlineMin = useMemo(() => {
       for_user: null,
     };
 
-    try {
-      await createTask(payload);
-      onClose();
-    } catch (e) {
-      alert(`Ошибка сохранения: ${e.message}`);
-    }
+    try { await createTask(payload); onClose(); }
+    catch (e) { alert(`Ошибка сохранения: ${e.message}`); }
+  };
+
+  // ==== обработчики инлайн-колёс ====
+
+  // Минуты начала: показываем точные (0..59),
+  // но при прокрутке прыгаем по четвертям в сторону жеста, с переносом часа.
+  const onInlineStartMinutes = (mNew) => {
+    setSm((prev) => {
+      const dir = dirFromTo(prev, mNew);
+      if (dir > 0) {
+        const nq = nextQ(prev);                // 43 -> 60
+        if (nq >= 60) { setSh((h) => (h + 1) % 24); return 0; }
+        return nq;
+      }
+      if (dir < 0) return prevQ(prev);        // 43 -> 30
+      return prev;
+    });
+  };
+
+  // Час конца: меняем длительность, учитывая «следующий день»
+  const onInlineEndHour = (hNew) => {
+    const curEnd = new Date(startDate.getTime() + duration * 60000);
+    const end = new Date(startDate);
+    end.setHours(hNew, curEnd.getMinutes(), 0, 0);
+    setDuration(durationFromEnd(end));
+  };
+
+  // Минуты конца: та же логика, что и для начала, + корректный перенос часа/дня
+  const onInlineEndMinutes = (mNew) => {
+    const curEnd = new Date(startDate.getTime() + duration * 60000);
+    const prev = curEnd.getMinutes();
+    const dir = dirFromTo(prev, mNew);
+
+    let h = curEnd.getHours();
+    let m = prev;
+
+    if (dir > 0) {
+      const nq = nextQ(prev);                 // 43 -> 60
+      if (nq >= 60) { h = (h + 1) % 24; m = 0; } else m = nq;
+    } else if (dir < 0) {
+      m = prevQ(prev);                        // 43 -> 30
+    } else return;
+
+    const end = new Date(startDate);
+    end.setHours(h, m, 0, 0);
+    setDuration(durationFromEnd(end));
   };
 
   return (
@@ -145,8 +186,6 @@ const endInlineMin = useMemo(() => {
 
       <div className="sheet-panel" role="dialog" aria-modal>
         <div className="sheet-grabber" />
-
-        {/* Заголовок */}
         <div className="sheet-title">Новая задача</div>
 
         {/* Название + иконка слева */}
@@ -166,7 +205,7 @@ const endInlineMin = useMemo(() => {
           <div className="row-title">Задача на весь день</div>
         </button>
 
-        {/* Когда? — инлайн 4 колёсика + дата + «Подробнее…» */}
+        {/* Когда? — инлайн 4 колеса + выбор даты */}
         <div className="section">
           <div className="section-head">
             <div className="section-title">Когда?</div>
@@ -188,38 +227,29 @@ const endInlineMin = useMemo(() => {
               <div className="time-inline">
                 {/* ЧАС начала */}
                 <WheelPicker ariaLabel="час начала" values={hours} value={sh} onChange={setSh} />
-                {/* МИН начала: показываем ближайшую четверть, а при прокрутке — прыгаем на неё */}
+
+                {/* МИН начала — показываем точные, двигаем по 15м */}
                 <WheelPicker
-                    ariaLabel="минуты начала"
-                    values={MINS15}
-                    value={smInline}
-                    onChange={(m) => setSm(m)}   // пользователь выбрал четверть — делаем минуту ровно ей
+                  ariaLabel="минуты начала"
+                  values={MINS60}
+                  value={sm}
+                  onChange={onInlineStartMinutes}
                 />
-                {/* ЧАС конца — меняем duration */}
+
+                {/* ЧАС конца */}
                 <WheelPicker
                   ariaLabel="час конца"
                   values={hours}
-                  value={new Date(startDate.getTime() + duration * 60000).getHours()}
-                  onChange={(h) => {
-                    const curEnd = new Date(startDate.getTime() + duration * 60000);
-                    const end = new Date(startDate);
-                    end.setHours(h, curEnd.getMinutes(), 0, 0);
-                    const m = Math.max(1, Math.round((end - startDate) / 60000));
-                    setDuration(m);
-                  }}
+                  value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
+                  onChange={onInlineEndHour}
                 />
-                {/* МИН конца: показываем ближайшую четверть, при прокрутке пересчитываем duration */}
+
+                {/* МИН конца — показываем точные, двигаем по 15м */}
                 <WheelPicker
-                    ariaLabel="минуты конца"
-                    values={MINS15}
-                    value={endInlineMin}
-                    onChange={(m) => {
-                        const curEnd = new Date(startDate.getTime() + duration * 60000);
-                        const end = new Date(startDate);
-                        end.setHours(curEnd.getHours(), m, 0, 0);
-                        const minsDiff = Math.max(1, Math.round((end - startDate) / 60000));
-                        setDuration(minsDiff);
-                    }}
+                  ariaLabel="минуты конца"
+                  values={MINS60}
+                  value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
+                  onChange={onInlineEndMinutes}
                 />
               </div>
 
@@ -238,7 +268,7 @@ const endInlineMin = useMemo(() => {
           )}
         </div>
 
-        {/* Как долго (пресеты + подробности) */}
+        {/* Как долго (пресеты + подробно) */}
         {!allDay && (
           <div className="section">
             <div className="section-head">
@@ -262,7 +292,7 @@ const endInlineMin = useMemo(() => {
           </div>
         )}
 
-        {/* Какой цвет */}
+        {/* Цвет */}
         <div className="section">
           <div className="section-title">Какой цвет?</div>
           <div className="colors">
@@ -279,7 +309,7 @@ const endInlineMin = useMemo(() => {
           </div>
         </div>
 
-        {/* Как часто */}
+        {/* Повтор */}
         <div className="section">
           <div className="section-title">Как часто?</div>
           <div className="chips">
@@ -322,9 +352,7 @@ const endInlineMin = useMemo(() => {
               {subtasks.map((s) => (
                 <li key={s.id}>
                   {s.text}
-                  <button onClick={() => removeSubtask(s.id)} type="button">
-                    ×
-                  </button>
+                  <button onClick={() => removeSubtask(s.id)} type="button">×</button>
                 </li>
               ))}
             </ul>
@@ -337,24 +365,18 @@ const endInlineMin = useMemo(() => {
           />
         </div>
 
-        {/* Кнопка «Добавить» — скрываем если открыт внутренний шит */}
         {!isTimePickerOpen && !isDurPickerOpen && (
-          <button className="submit-btn" onClick={handleSubmit}>
-            Добавить задачу
-          </button>
+          <button className="submit-btn" onClick={handleSubmit}>Добавить задачу</button>
         )}
       </div>
 
-      {/* Внутренний шит: выбор времени интервала (поминутно) */}
+      {/* Подробный выбор времени (живое обновление) */}
       <div className={`inner-sheet ${isTimePickerOpen ? "inner-sheet--open" : ""}`}>
         <div
           className="inner-grabber"
-          onTouchStart={(e) => {
-            e.currentTarget._y0 = e.touches[0].clientY;
-          }}
+          onTouchStart={(e) => { e.currentTarget._y0 = e.touches[0].clientY; }}
           onTouchMove={(e) => {
-            const y = e.touches[0].clientY;
-            const y0 = e.currentTarget._y0 ?? y;
+            const y = e.touches[0].clientY, y0 = e.currentTarget._y0 ?? y;
             const dy = Math.max(0, y - y0);
             const panel = e.currentTarget.closest(".inner-sheet");
             if (panel) panel.style.transform = `translateY(${dy}px)`;
@@ -378,35 +400,29 @@ const endInlineMin = useMemo(() => {
           <WheelPicker
             ariaLabel="час конца"
             values={hours}
-            value={new Date(startDate.getTime() + duration * 60000).getHours()}
+            value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
             onChange={(h) => {
               const curEnd = new Date(startDate.getTime() + duration * 60000);
-              const end = new Date(startDate);
-              end.setHours(h, curEnd.getMinutes(), 0, 0);
-              const m = Math.max(1, Math.round((end - startDate) / 60000));
-              setDuration(m);
+              const end = new Date(startDate); end.setHours(h, curEnd.getMinutes(), 0, 0);
+              setDuration(durationFromEnd(end));
             }}
           />
           <WheelPicker
             ariaLabel="минуты конца"
             values={MINS60}
-            value={new Date(startDate.getTime() + duration * 60000).getMinutes()}
+            value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
             onChange={(m) => {
               const curEnd = new Date(startDate.getTime() + duration * 60000);
-              const end = new Date(startDate);
-              end.setHours(curEnd.getHours(), m, 0, 0);
-              const minsDiff = Math.max(1, Math.round((end - startDate) / 60000));
-              setDuration(minsDiff);
+              const end = new Date(startDate); end.setHours(curEnd.getHours(), m, 0, 0);
+              setDuration(durationFromEnd(end));
             }}
           />
         </div>
 
-        <button className="inner-close" onClick={() => setIsTimePickerOpen(false)}>
-          Готово
-        </button>
+        <button className="inner-close" onClick={() => setIsTimePickerOpen(false)}>Готово</button>
       </div>
 
-      {/* Внутренний шит: выбор длительности */}
+      {/* Подробный выбор длительности */}
       <div className={`inner-sheet ${isDurPickerOpen ? "inner-sheet--open" : ""}`}>
         <div className="inner-grabber" />
         <div className="inner-title">Длительность</div>
@@ -431,15 +447,11 @@ const endInlineMin = useMemo(() => {
 
         <div className="dur-presets">
           {DUR_PRESETS.map((p) => (
-            <button key={p.m} className="chip" onClick={() => setDuration(p.m)}>
-              {p.label}
-            </button>
+            <button key={p.m} className="chip" onClick={() => setDuration(p.m)}>{p.label}</button>
           ))}
         </div>
 
-        <button className="inner-close" onClick={() => setIsDurPickerOpen(false)}>
-          Готово
-        </button>
+        <button className="inner-close" onClick={() => setIsDurPickerOpen(false)}>Готово</button>
       </div>
     </div>
   );
