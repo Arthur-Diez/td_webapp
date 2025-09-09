@@ -60,6 +60,9 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
 
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isDurPickerOpen, setIsDurPickerOpen] = useState(false);
+  // какое колесо пользователь «тапнул»: 'sh' | 'sm' | 'eh' | 'em' | null
+  const [pickedWheel, setPickedWheel] = useState(null);
+  const openTimeSheet = (key) => { setPickedWheel(key); setIsTimePickerOpen(true); };
 
   const startDate = useMemo(() => {
     const d = new Date(localDate);
@@ -103,6 +106,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setIsTimePickerOpen(false);
       setIsDurPickerOpen(false);
       setLocalDate(baseDateProp);
+      setPickedWheel(null);
     }
     // eslint-disable-next-line
   }, [open]);
@@ -226,42 +230,45 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
             <>
               <div className="time-inline">
                 {/* ЧАС начала */}
-                <WheelPicker ariaLabel="час начала" values={hours} value={sh} onChange={setSh} />
+                <WheelPicker
+                    ariaLabel="час начала"
+                    values={hours}
+                    value={sh}
+                    onChange={setSh}
+                    onTap={() => openTimeSheet('sh')}
+                    className={pickedWheel === 'sh' ? 'wheel--picked' : ''}
+                />
 
                 {/* МИН начала — показываем точные, двигаем по 15м */}
                 <WheelPicker
-                  ariaLabel="минуты начала"
-                  values={MINS60}
-                  value={sm}
-                  onChange={onInlineStartMinutes}
+                    ariaLabel="минуты начала"
+                    values={MINS60}
+                    value={sm}
+                    onChange={onInlineStartMinutes}
+                    onTap={() => openTimeSheet('sm')}
+                    className={pickedWheel === 'sm' ? 'wheel--picked' : ''}
                 />
 
                 {/* ЧАС конца */}
                 <WheelPicker
-                  ariaLabel="час конца"
-                  values={hours}
-                  value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
-                  onChange={onInlineEndHour}
+                    ariaLabel="час конца"
+                    values={hours}
+                    value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
+                    onChange={onInlineEndHour}
+                    onTap={() => openTimeSheet('eh')}
+                    className={pickedWheel === 'eh' ? 'wheel--picked' : ''}
                 />
 
                 {/* МИН конца — показываем точные, двигаем по 15м */}
                 <WheelPicker
-                  ariaLabel="минуты конца"
-                  values={MINS60}
-                  value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
-                  onChange={onInlineEndMinutes}
+                    ariaLabel="минуты конца"
+                    values={MINS60}
+                    value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
+                    onChange={onInlineEndMinutes}
+                    onTap={() => openTimeSheet('em')}
+                    className={pickedWheel === 'em' ? 'wheel--picked' : ''}
                 />
-              </div>
-
-              <div className="addpanel-row" style={{ marginTop: 8 }}>
-                <div className="addpanel-hint">
-                  {mm2(startDate.getHours())}:{mm2(startDate.getMinutes())} —{" "}
-                  {mm2(endDate.getHours())}:{mm2(endDate.getMinutes())} ({totalHuman})
                 </div>
-                <button className="link" type="button" onClick={() => setIsTimePickerOpen(true)}>
-                  Подробнее…
-                </button>
-              </div>
             </>
           ) : (
             <div className="all-day-hint">🗓 Весь день</div>
@@ -386,9 +393,13 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
             if (!panel) return;
             const m = panel.style.transform.match(/translateY\((\d+)px\)/);
             const dy = m ? parseInt(m[1], 10) : 0;
-            panel.style.transform = "";
-            if (dy > 60) setIsTimePickerOpen(false);
-          }}
+
+            panel.style.transform = "";           // ← сброс временного translate
+            if (dy > 60) {                        // ← закрываем по «свайпу вниз»
+                setIsTimePickerOpen(false);
+                setPickedWheel(null);               // ← ДОБАВЛЕНО: убираем подсветку выбранного колеса
+            }
+            }}
         />
         <div className="inner-title">Выбор времени</div>
         <div className="inner-sub">Данная задача займёт {totalHuman}</div>
