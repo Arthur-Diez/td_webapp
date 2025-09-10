@@ -57,9 +57,12 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   const [repeat, setRepeat] = useState("once");
   const [notes, setNotes] = useState("");
   const [subtasks, setSubtasks] = useState([]);
+  const [subtaskInput, setSubtaskInput] = useState("");
 
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isDurPickerOpen, setIsDurPickerOpen] = useState(false);
+  // «без временного интервала» (есть только время начала)
+  const [noEnd, setNoEnd] = useState(false);
   // какое колесо пользователь «тапнул»: 'sh' | 'sm' | 'eh' | 'em' | null
   const [pickedWheel, setPickedWheel] = useState(null);
   const openTimeSheet = (key) => { setPickedWheel(key); setIsTimePickerOpen(true); };
@@ -71,11 +74,11 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   }, [localDate, sh, sm]);
 
   const endDate = useMemo(() => {
-    if (allDay) return null;
+    if (allDay || noEnd) return null;
     const d = new Date(startDate);
     d.setMinutes(d.getMinutes() + duration);
     return d;
-  }, [startDate, duration, allDay]);
+  }, [startDate, duration, allDay, noEnd]);
 
   const totalHuman = useMemo(() => {
     const m = duration, h = Math.floor(m / 60), mm = m % 60;
@@ -107,13 +110,18 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setIsDurPickerOpen(false);
       setLocalDate(baseDateProp);
       setPickedWheel(null);
+      setNoEnd(false);
     }
     // eslint-disable-next-line
   }, [open]);
+  useEffect(() => { if (allDay) setNoEnd(false); }, [allDay]);
 
   const addSubtask = () => {
-    const t = prompt("Подзадача:");
-    if (t) setSubtasks((s) => [...s, { id: Date.now(), text: t }]);
+    const t = subtaskInput.trim();
+    if (!t) return;
+    if (subtasks.length >= 30) { alert("Максимум 30 подзадач"); return; }
+    setSubtasks((s) => [{ id: Date.now(), text: t }, ...s]); // сверху
+    setSubtaskInput("");
   };
   const removeSubtask = (id) => setSubtasks((s) => s.filter((x) => x.id !== id));
 
@@ -129,7 +137,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       start_dt: allDay
         ? new Date(new Date(localDate).setHours(0, 0, 0, 0)).toISOString()
         : dateISO(startDate),
-      end_dt: allDay ? null : dateISO(endDate),
+      end_dt: (allDay || noEnd) ? null : dateISO(endDate),
       all_day: allDay,
       for_user: null,
     };
@@ -209,6 +217,18 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
           <div className="row-title">Задача на весь день</div>
         </button>
 
+        {/* Без временного интервала */}
+        <button
+            className="row toggler"
+            onClick={() => setNoEnd(v => !v)}
+            type="button"
+            disabled={allDay}
+            title={allDay ? "Недоступно при режиме 'весь день'" : ""}
+        >
+            <div className={`check ${noEnd ? "check--on" : ""}`} />
+            <div className="row-title">Задача без временного интервала</div>
+        </button>
+
         {/* Когда? — инлайн 4 колеса + выбор даты */}
         <div className="section">
           <div className="section-head">
@@ -228,7 +248,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
 
           {!allDay ? (
             <>
-              <div className="time-inline">
+              <div className={`time-inline ${noEnd ? 'time-inline--two' : ''}`}>
                 {/* ЧАС начала */}
                 <WheelPicker
                     ariaLabel="час начала"
@@ -249,25 +269,27 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
                     className={pickedWheel === 'sm' ? 'wheel--picked' : ''}
                 />
 
-                {/* ЧАС конца */}
-                <WheelPicker
-                    ariaLabel="час конца"
-                    values={hours}
-                    value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
-                    onChange={onInlineEndHour}
-                    onTap={() => openTimeSheet('eh')}
-                    className={pickedWheel === 'eh' ? 'wheel--picked' : ''}
-                />
-
-                {/* МИН конца — показываем точные, двигаем по 15м */}
-                <WheelPicker
-                    ariaLabel="минуты конца"
-                    values={MINS60}
-                    value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
-                    onChange={onInlineEndMinutes}
-                    onTap={() => openTimeSheet('em')}
-                    className={pickedWheel === 'em' ? 'wheel--picked' : ''}
-                />
+                {/* Конец интервала — видим только если есть конечное время */}
+                {!noEnd && (
+                    <>
+                    <WheelPicker
+                        ariaLabel="час конца"
+                        values={hours}
+                        value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
+                        onChange={onInlineEndHour}
+                        onTap={() => openTimeSheet('eh')}
+                        className={pickedWheel === 'eh' ? 'wheel--picked' : ''}
+                    />
+                    <WheelPicker
+                        ariaLabel="минуты конца"
+                        values={MINS60}
+                        value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
+                        onChange={onInlineEndMinutes}
+                        onTap={() => openTimeSheet('em')}
+                        className={pickedWheel === 'em' ? 'wheel--picked' : ''}
+                    />
+                    </>
+                )}
                 </div>
             </>
           ) : (
@@ -276,7 +298,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         </div>
 
         {/* Как долго (пресеты + подробно) */}
-        {!allDay && (
+        {!allDay && !noEnd && (
           <div className="section">
             <div className="section-head">
               <div className="section-title">Как долго?</div>
@@ -351,19 +373,38 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         {/* Подробности/подзадачи */}
         <div className="section">
           <div className="section-title">Нужны подробности?</div>
-          <button className="subtask-add" onClick={addSubtask} type="button">
-            + Добавить подзадачу
-          </button>
-          {subtasks.length > 0 && (
-            <ul className="subtasks">
-              {subtasks.map((s) => (
-                <li key={s.id}>
-                  {s.text}
-                  <button onClick={() => removeSubtask(s.id)} type="button">×</button>
-                </li>
-              ))}
-            </ul>
-          )}
+            {subtasks.length > 0 && (
+                <ul className="subtasks">
+                {subtasks.map((s) => (
+                    <li key={s.id}>
+                    <span className="subtask-text">{s.text}</span>
+                    <button
+                        className="subtask-trash"
+                        onClick={() => removeSubtask(s.id)}
+                        type="button"
+                        aria-label="Удалить подзадачу"
+                    >🗑️</button>
+                    </li>
+                ))}
+                </ul>
+            )}
+            <div className="subtask-row">
+                <input
+                className="subtask-input"
+                placeholder="Подзадача…"
+                value={subtaskInput}
+                onChange={(e) => setSubtaskInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") addSubtask(); }}
+                />
+                <button
+                className="subtask-add"
+                onClick={addSubtask}
+                type="button"
+                disabled={!subtaskInput.trim() || subtasks.length >= 30}
+                >
+                + Добавить подзадачу
+                </button>
+            </div>
           <textarea
             className="notes"
             placeholder="Заметки, ссылки, телефоны…"
@@ -405,32 +446,42 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         <div className="inner-sub">Данная задача займёт {totalHuman}</div>
 
         <div className="wheels">
-          <WheelPicker ariaLabel="час начала" values={hours} value={sh} onChange={setSh} />
-          <WheelPicker ariaLabel="минуты начала" values={MINS60} value={sm} onChange={setSm} />
-          <div className="arrow">→</div>
-          <WheelPicker
-            ariaLabel="час конца"
-            values={hours}
-            value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
-            onChange={(h) => {
-              const curEnd = new Date(startDate.getTime() + duration * 60000);
-              const end = new Date(startDate); end.setHours(h, curEnd.getMinutes(), 0, 0);
-              setDuration(durationFromEnd(end));
-            }}
-          />
-          <WheelPicker
-            ariaLabel="минуты конца"
-            values={MINS60}
-            value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
-            onChange={(m) => {
-              const curEnd = new Date(startDate.getTime() + duration * 60000);
-              const end = new Date(startDate); end.setHours(curEnd.getHours(), m, 0, 0);
-              setDuration(durationFromEnd(end));
-            }}
-          />
+            <WheelPicker ariaLabel="час начала" values={hours} value={sh} onChange={setSh} />
+            <WheelPicker ariaLabel="минуты начала" values={MINS60} value={sm} onChange={setSm} />
+
+            {!noEnd && (
+                <>
+                <div className="arrow">→</div>
+                <WheelPicker
+                    ariaLabel="час конца"
+                    values={hours}
+                    value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
+                    onChange={(h) => {
+                    const curEnd = new Date(startDate.getTime() + duration * 60000);
+                    const end = new Date(startDate); end.setHours(h, curEnd.getMinutes(), 0, 0);
+                    setDuration(durationFromEnd(end));
+                    }}
+                />
+                <WheelPicker
+                    ariaLabel="минуты конца"
+                    values={MINS60}
+                    value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
+                    onChange={(m) => {
+                    const curEnd = new Date(startDate.getTime() + duration * 60000);
+                    const end = new Date(startDate); end.setHours(curEnd.getHours(), m, 0, 0);
+                    setDuration(durationFromEnd(end));
+                    }}
+                />
+                </>
+            )}
         </div>
 
-        <button className="inner-close" onClick={() => setIsTimePickerOpen(false)}>Готово</button>
+        <button
+            className="inner-close"
+            onClick={() => { setIsTimePickerOpen(false); setPickedWheel(null); }}
+        >
+            Готово
+        </button>
       </div>
 
       {/* Подробный выбор длительности */}
