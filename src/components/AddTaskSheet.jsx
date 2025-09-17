@@ -200,221 +200,230 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         <div className="sheet-grabber" />
         <div className="sheet-title">Новая задача</div>
 
-        {/* Название + иконка слева */}
-        <div className="title-row">
-          <div className="title-icon">@</div>
-          <input
-            className="title-input"
-            placeholder="Ответить на почту"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-
-        {/* Весь день */}
-        <button className="row toggler" onClick={() => setAllDay((v) => !v)} type="button">
-          <div className={`check ${allDay ? "check--on" : ""}`} />
-          <div className="row-title">Задача на весь день</div>
-        </button>
-
-        {/* Без временного интервала */}
-        <button
-            className="row toggler"
-            onClick={() => setNoEnd(v => !v)}
-            type="button"
-            disabled={allDay}
-            title={allDay ? "Недоступно при режиме 'весь день'" : ""}
-        >
-            <div className={`check ${noEnd ? "check--on" : ""}`} />
-            <div className="row-title">Задача без временного интервала</div>
-        </button>
-
-        {/* Когда? — инлайн 4 колеса + выбор даты */}
-        <div className="section">
-          <div className="section-head">
-            <div className="section-title">Когда?</div>
+        <div className="sheet-content">
+          {/* Название + иконка слева */}
+          <div className="title-row">
+            <div className="title-icon">@</div>
             <input
-              className="date-btn"
-              type="date"
-              value={new Date(localDate).toISOString().slice(0, 10)}
-              onChange={(e) => {
-                const [y, m, d] = e.target.value.split("-").map(Number);
-                const nd = new Date(localDate);
-                nd.setFullYear(y, m - 1, d);
-                setLocalDate(nd);
-              }}
+              className="title-input"
+              placeholder="Ответить на почту"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
+          {/* Весь день */}
+            <button className="row toggler" onClick={() => setAllDay((v) => !v)} type="button">
+              <div className={`check ${allDay ? "check--on" : ""}`} />
+              <div className="row-title">Задача на весь день</div>
+            </button>
+
+          {/* Без временного интервала */}
+          <button
+            className="row toggler"
+            onClick={() => setNoEnd((v) => !v)}
+            type="button"
+            disabled={allDay}
+            title={allDay ? "Недоступно при режиме 'весь день'" : ""}
+          >
+            <div className={`check ${noEnd ? "check--on" : ""}`} />
+            <div className="row-title">Задача без временного интервала</div>
+          </button>
+
+          {/* Когда? — инлайн 4 колеса + выбор даты */}
+          <div className="section">
+            <div className="section-head">
+              <div className="section-title">Когда?</div>
+              <input
+                className="date-btn"
+                type="date"
+                value={new Date(localDate).toISOString().slice(0, 10)}
+                onChange={(e) => {
+                  const [y, m, d] = e.target.value.split("-").map(Number);
+                  const nd = new Date(localDate);
+                  nd.setFullYear(y, m - 1, d);
+                  setLocalDate(nd);
+                }}
+              />
+            </div>
+
           {!allDay ? (
-            <>
-              <div className={`time-inline ${noEnd ? 'time-inline--two' : ''}`}>
+              <div className={`time-inline ${noEnd ? "time-inline--two" : ""}`}>
+
                 {/* ЧАС начала */}
                 <WheelPicker
-                    ariaLabel="час начала"
-                    values={hours}
-                    value={sh}
-                    onChange={setSh}
-                    onTap={() => openTimeSheet('sh')}
-                    className={pickedWheel === 'sh' ? 'wheel--picked' : ''}
+                  ariaLabel="час начала"
+                  values={hours}
+                  value={sh}
+                  onChange={setSh}
+                  onTap={() => openTimeSheet("sh")}
+                  className={pickedWheel === "sh" ? "wheel--picked" : ""}
                 />
 
                 {/* МИН начала — показываем точные, двигаем по 15м */}
                 <WheelPicker
-                    ariaLabel="минуты начала"
-                    values={MINS60}
-                    value={sm}
-                    onChange={onInlineStartMinutes}
-                    onTap={() => openTimeSheet('sm')}
-                    className={pickedWheel === 'sm' ? 'wheel--picked' : ''}
+                  ariaLabel="минуты начала"
+                  values={MINS60}
+                  value={sm}
+                  onChange={onInlineStartMinutes}
+                  onTap={() => openTimeSheet("sm")}
+                  className={pickedWheel === "sm" ? "wheel--picked" : ""}
                 />
 
                 {/* Конец интервала — видим только если есть конечное время */}
                 {!noEnd && (
-                    <>
+                  <>
                     <WheelPicker
-                        ariaLabel="час конца"
-                        values={hours}
-                        value={(new Date(startDate.getTime() + duration * 60000)).getHours()}
-                        onChange={onInlineEndHour}
-                        onTap={() => openTimeSheet('eh')}
-                        className={pickedWheel === 'eh' ? 'wheel--picked' : ''}
+                      ariaLabel="час конца"
+                      values={hours}
+                      value={new Date(startDate.getTime() + duration * 60000).getHours()}
+                      onChange={onInlineEndHour}
+                      onTap={() => openTimeSheet("eh")}
+                      className={pickedWheel === "eh" ? "wheel--picked" : ""}
                     />
                     <WheelPicker
-                        ariaLabel="минуты конца"
-                        values={MINS60}
-                        value={(new Date(startDate.getTime() + duration * 60000)).getMinutes()}
-                        onChange={onInlineEndMinutes}
-                        onTap={() => openTimeSheet('em')}
-                        className={pickedWheel === 'em' ? 'wheel--picked' : ''}
+                      ariaLabel="минуты конца"
+                      values={MINS60}
+                      value={new Date(startDate.getTime() + duration * 60000).getMinutes()}
+                      onChange={onInlineEndMinutes}
+                      onTap={() => openTimeSheet("em")}
+                      className={pickedWheel === "em" ? "wheel--picked" : ""}
                     />
-                    </>
+                  </>
                 )}
                 </div>
-            </>
-          ) : (
-            <div className="all-day-hint">🗓 Весь день</div>
-          )}
-        </div>
+            ) : (
+              <div className="all-day-hint">🗓 Весь день</div>
+            )}
+          </div>
 
-        {/* Как долго (пресеты + подробно) */}
-        {!allDay && !noEnd && (
-          <div className="section">
-            <div className="section-head">
-              <div className="section-title">Как долго?</div>
-              <button className="link" type="button" onClick={() => setIsDurPickerOpen(true)}>
-                Подробнее…
-              </button>
+          {/* Как долго (пресеты + подробно) */}
+          {!allDay && !noEnd && (
+            <div className="section">
+              <div className="section-head">
+                <div className="section-title">Как долго?</div>
+                <button className="link" type="button" onClick={() => setIsDurPickerOpen(true)}>
+                  Подробнее…
+                </button>
+              </div>
+              <div className="chips">
+                {DUR_PRESETS.map((p) => (
+                  <button
+                    key={p.m}
+                    className={`chip ${duration === p.m ? "chip--active" : ""}`}
+                    onClick={() => setDuration(p.m)}
+                    type="button"
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="chips">
-              {DUR_PRESETS.map((p) => (
+          )}
+        {/* Цвет */}
+          <div className="section">
+            <div className="section-title">Какой цвет?</div>
+            <div className="colors">
+              {COLORS.map((c) => (
                 <button
-                  key={p.m}
-                  className={`chip ${duration === p.m ? "chip--active" : ""}`}
-                  onClick={() => setDuration(p.m)}
+                  key={c}
+                  className={`color ${color === c ? "color--active" : ""}`}
+                  style={{ "--c": c }}
+                  onClick={() => setColor(c)}
+                  type="button"
+                  aria-label="цвет"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Повтор */}
+          <div className="section">
+            <div className="section-title">Как часто?</div>
+            <div className="chips">
+              {[
+                { k: "once", label: "Один раз" },
+                { k: "daily", label: "Ежедневно" },
+                { k: "weekly", label: "Еженедельно" },
+                { k: "monthly", label: "Ежемесячно" },
+              ].map((o) => (
+                <button
+                  key={o.k}
+                  className={`chip ${repeat === o.k ? "chip--active" : ""}`}
+                  onClick={() => setRepeat(o.k)}
                   type="button"
                 >
-                  {p.label}
+                  {o.label}
                 </button>
               ))}
             </div>
           </div>
-        )}
-
-        {/* Цвет */}
-        <div className="section">
-          <div className="section-title">Какой цвет?</div>
-          <div className="colors">
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                className={`color ${color === c ? "color--active" : ""}`}
-                style={{ "--c": c }}
-                onClick={() => setColor(c)}
-                type="button"
-                aria-label="цвет"
-              />
-            ))}
+          {/* Оповещения — заглушка */}
+          <div className="section">
+            <div className="section-head">
+              <div className="section-title">Нужны оповещения?</div>
+              <span className="hint">Позже подключим</span>
+            </div>
+            <div className="muted">🔔 В момент начала</div>
+            <div className="muted">🔕 За 15м до начала</div>
           </div>
-        </div>
-
-        {/* Повтор */}
-        <div className="section">
-          <div className="section-title">Как часто?</div>
-          <div className="chips">
-            {[
-              { k: "once", label: "Один раз" },
-              { k: "daily", label: "Ежедневно" },
-              { k: "weekly", label: "Еженедельно" },
-              { k: "monthly", label: "Ежемесячно" },
-            ].map((o) => (
-              <button
-                key={o.k}
-                className={`chip ${repeat === o.k ? "chip--active" : ""}`}
-                onClick={() => setRepeat(o.k)}
-                type="button"
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Оповещения — заглушка */}
-        <div className="section">
-          <div className="section-head">
-            <div className="section-title">Нужны оповещения?</div>
-            <span className="hint">Позже подключим</span>
-          </div>
-          <div className="muted">🔔 В момент начала</div>
-          <div className="muted">🔕 За 15м до начала</div>
-        </div>
-
-        {/* Подробности/подзадачи */}
-        <div className="section">
-          <div className="section-title">Нужны подробности?</div>
+          {/* Подробности/подзадачи */}
+          <div className="section">
+            <div className="section-head">
+              <div className="section-title">Нужны подробности?</div>
+              {subtasks.length > 0 && <span className="section-badge">{subtasks.length}</span>}
+            </div>
             {subtasks.length > 0 && (
-                <ul className="subtasks">
+              <ul className="subtasks">
                 {subtasks.map((s) => (
-                    <li key={s.id}>
+                  <li key={s.id}>
                     <span className="subtask-text">{s.text}</span>
                     <button
                         className="subtask-trash"
-                        onClick={() => removeSubtask(s.id)}
-                        type="button"
-                        aria-label="Удалить подзадачу"
-                    >🗑️</button>
-                    </li>
+                      onClick={() => removeSubtask(s.id)}
+                      type="button"
+                      aria-label="Удалить подзадачу"
+                    >
+                      🗑️
+                    </button>
+                  </li>
                 ))}
-                </ul>
+              </ul>
             )}
             <div className="subtask-row">
-                <input
+              <input
                 className="subtask-input"
                 placeholder="Подзадача…"
                 value={subtaskInput}
                 onChange={(e) => setSubtaskInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") addSubtask(); }}
-                />
-                <button
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addSubtask();
+                }}
+              />
+              <button
                 className="subtask-add"
                 onClick={addSubtask}
                 type="button"
                 disabled={!subtaskInput.trim() || subtasks.length >= 30}
-                >
+              >
                 + Добавить подзадачу
-                </button>
+              </button>
             </div>
           <textarea
-            className="notes"
-            placeholder="Заметки, ссылки, телефоны…"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
+              className="notes"
+              placeholder="Заметки, ссылки, телефоны…"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
         </div>
 
         {!isTimePickerOpen && !isDurPickerOpen && (
-          <button className="submit-btn" onClick={handleSubmit}>Добавить задачу</button>
+          <div className="sheet-footer">
+            <button className="submit-btn" onClick={handleSubmit}>
+              Добавить задачу
+            </button>
+          </div>
         )}
       </div>
 

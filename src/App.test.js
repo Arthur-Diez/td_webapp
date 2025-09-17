@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('отображает основную вкладку с задачами', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  const tab = screen.getByText(/Мои задачи/i);
+  expect(tab).toBeInTheDocument();
 });

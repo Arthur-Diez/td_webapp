@@ -35,4 +35,8 @@
 .wheel.wheel--compact .wheel-viewport { height: 144px; }
 
 /* подсветка «выбранного колеса» */
-.wheel--picked { outline: 2px solid #f08a8a; border-radius: 12px; }
+.wheel--picked {
+  outline: 2px solid var(--tg-accent);
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, .08);
+}
