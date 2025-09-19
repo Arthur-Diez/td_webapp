@@ -18,6 +18,10 @@ const DUR_PRESETS = [
   { label: "1h 30m", m: 90 },
 ];
 const COLORS = ["#F06292", "#FFB74D", "#FFD54F", "#AED581", "#64B5F6", "#81C784", "#BA68C8"];
+const MINUTE_STEPS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => ({
+  label: mm2(m),
+  value: m,
+}));
 
 // helpers для шагов по четвертям и направления
 const nextQ = (m) => Math.floor(m / 15) * 15 + 15;           // 43 -> 60
@@ -61,11 +65,19 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
 
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isDurPickerOpen, setIsDurPickerOpen] = useState(false);
+  const [isNotifyPickerOpen, setIsNotifyPickerOpen] = useState(false);
   // «без временного интервала» (есть только время начала)
   const [noEnd, setNoEnd] = useState(false);
   // какое колесо пользователь «тапнул»: 'sh' | 'sm' | 'eh' | 'em' | null
   const [pickedWheel, setPickedWheel] = useState(null);
   const openTimeSheet = (key) => { setPickedWheel(key); setIsTimePickerOpen(true); };
+
+  const [notifications, setNotifications] = useState({
+    start: true,
+    end: false,
+    beforeEnd15: false,
+  });
+  const [customNotify, setCustomNotify] = useState({ hours: 0, minutes: 15 });
 
   const startDate = useMemo(() => {
     const d = new Date(localDate);
@@ -108,9 +120,12 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setColor(COLORS[0]);
       setIsTimePickerOpen(false);
       setIsDurPickerOpen(false);
+      setIsNotifyPickerOpen(false);
       setLocalDate(baseDateProp);
       setPickedWheel(null);
       setNoEnd(false);
+      setNotifications({ start: true, end: false, beforeEnd15: false });
+      setCustomNotify({ hours: 0, minutes: 15 });
     }
     // eslint-disable-next-line
   }, [open]);
@@ -124,6 +139,30 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     setSubtaskInput("");
   };
   const removeSubtask = (id) => setSubtasks((s) => s.filter((x) => x.id !== id));
+
+  const toggleNotification = (key) => {
+    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const formatCustomNotify = () => {
+    const { hours, minutes } = customNotify;
+    if (!hours && !minutes) return null;
+    const parts = [];
+    if (hours) parts.push(`${hours}ч`);
+    if (minutes) parts.push(`${minutes}м`);
+    return `за ${parts.join(" ")} до начала`;
+  };
+
+  const notificationSummary = () => {
+    const active = [];
+    if (notifications.start) active.push("в момент начала");
+    if (notifications.end) active.push("в момент окончания");
+    if (notifications.beforeEnd15) active.push("за 15 мин до окончания");
+    const custom = formatCustomNotify();
+    if (custom) active.push(custom);
+    if (active.length === 0) return "напоминания отключены";
+    return active.join(" · ");
+  };
 
   const handleSubmit = async () => {
     if (!telegramId) return;
@@ -358,14 +397,42 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
               ))}
             </div>
           </div>
-          {/* Оповещения — заглушка */}
+          {/* Оповещения */}
           <div className="section">
             <div className="section-head">
               <div className="section-title">Нужны оповещения?</div>
-              <span className="hint">Позже подключим</span>
+              <button
+                className="link"
+                type="button"
+                onClick={() => setIsNotifyPickerOpen(true)}
+              >
+                Подробнее…
+              </button>
             </div>
-            <div className="muted">🔔 В момент начала</div>
-            <div className="muted">🔕 За 15м до начала</div>
+            <div className="notify-grid">
+              <button
+                type="button"
+                className={`chip chip--toggle ${notifications.start ? "chip--active" : ""}`}
+                onClick={() => toggleNotification("start")}
+              >
+                В момент начала
+              </button>
+              <button
+                type="button"
+                className={`chip chip--toggle ${notifications.end ? "chip--active" : ""}`}
+                onClick={() => toggleNotification("end")}
+              >
+                В момент окончания
+              </button>
+              <button
+                type="button"
+                className={`chip chip--toggle ${notifications.beforeEnd15 ? "chip--active" : ""}`}
+                onClick={() => toggleNotification("beforeEnd15")}
+              >
+                За 15 мин до окончания
+              </button>
+            </div>
+            <div className="notify-summary">🔔 {notificationSummary()}</div>
           </div>
           {/* Подробности/подзадачи */}
           <div className="section">
@@ -418,7 +485,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
           </div>
         </div>
 
-        {!isTimePickerOpen && !isDurPickerOpen && (
+        {!isTimePickerOpen && !isDurPickerOpen && !isNotifyPickerOpen && (
           <div className="sheet-footer">
             <button className="submit-btn" onClick={handleSubmit}>
               Добавить задачу
@@ -429,28 +496,14 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
 
       {/* Подробный выбор времени (живое обновление) */}
       <div className={`inner-sheet ${isTimePickerOpen ? "inner-sheet--open" : ""}`}>
-        <div
-          className="inner-grabber"
-          onTouchStart={(e) => { e.currentTarget._y0 = e.touches[0].clientY; }}
-          onTouchMove={(e) => {
-            const y = e.touches[0].clientY, y0 = e.currentTarget._y0 ?? y;
-            const dy = Math.max(0, y - y0);
-            const panel = e.currentTarget.closest(".inner-sheet");
-            if (panel) panel.style.transform = `translateY(${dy}px)`;
-          }}
-          onTouchEnd={(e) => {
-            const panel = e.currentTarget.closest(".inner-sheet");
-            if (!panel) return;
-            const m = panel.style.transform.match(/translateY\((\d+)px\)/);
-            const dy = m ? parseInt(m[1], 10) : 0;
-
-            panel.style.transform = "";           // ← сброс временного translate
-            if (dy > 60) {                        // ← закрываем по «свайпу вниз»
-                setIsTimePickerOpen(false);
-                setPickedWheel(null);               // ← ДОБАВЛЕНО: убираем подсветку выбранного колеса
-            }
-            }}
-        />
+        <button
+          className="inner-dismiss"
+          type="button"
+          aria-label="Закрыть выбор времени"
+          onClick={() => { setIsTimePickerOpen(false); setPickedWheel(null); }}
+        >
+          <span aria-hidden>⌄</span>
+        </button>
         <div className="inner-title">Выбор времени</div>
         <div className="inner-sub">Данная задача займёт {totalHuman}</div>
 
@@ -487,6 +540,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
 
         <button
             className="inner-close"
+            type="button"
             onClick={() => { setIsTimePickerOpen(false); setPickedWheel(null); }}
         >
             Готово
@@ -495,7 +549,14 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
 
       {/* Подробный выбор длительности */}
       <div className={`inner-sheet ${isDurPickerOpen ? "inner-sheet--open" : ""}`}>
-        <div className="inner-grabber" />
+        <button
+          className="inner-dismiss"
+          type="button"
+          aria-label="Закрыть выбор длительности"
+          onClick={() => setIsDurPickerOpen(false)}
+        >
+          <span aria-hidden>⌄</span>
+        </button>
         <div className="inner-title">Длительность</div>
 
         <div className="wheels">
@@ -507,10 +568,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
           />
           <WheelPicker
             ariaLabel="минуты"
-            values={[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => ({
-              label: mm2(m),
-              value: m,
-            }))}
+            values={MINUTE_STEPS}
             value={duration % 60}
             onChange={(m) => setDuration(Math.floor(duration / 60) * 60 + m)}
           />
@@ -522,7 +580,35 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
           ))}
         </div>
 
-        <button className="inner-close" onClick={() => setIsDurPickerOpen(false)}>Готово</button>
+        <button className="inner-close" type="button" onClick={() => setIsDurPickerOpen(false)}>Готово</button>
+      </div>
+
+      <div className={`inner-sheet ${isNotifyPickerOpen ? "inner-sheet--open" : ""}`}>
+        <button
+          className="inner-dismiss"
+          type="button"
+          aria-label="Закрыть настройки оповещений"
+          onClick={() => setIsNotifyPickerOpen(false)}
+        >
+          <span aria-hidden>⌄</span>
+        </button>
+        <div className="inner-title">Настроить оповещение</div>
+        <div className="inner-sub">Укажите, за сколько предупредить о задаче</div>
+        <div className="wheels">
+          <WheelPicker
+            ariaLabel="часы до начала"
+            values={Array.from({ length: 13 }, (_, i) => ({ label: `${i}ч`, value: i }))}
+            value={customNotify.hours}
+            onChange={(hours) => setCustomNotify((prev) => ({ ...prev, hours }))}
+          />
+          <WheelPicker
+            ariaLabel="минуты до начала"
+            values={MINUTE_STEPS}
+            value={customNotify.minutes}
+            onChange={(minutes) => setCustomNotify((prev) => ({ ...prev, minutes }))}
+          />
+        </div>
+        <button className="inner-close" type="button" onClick={() => setIsNotifyPickerOpen(false)}>Готово</button>
       </div>
     </div>
   );
