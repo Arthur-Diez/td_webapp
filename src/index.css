@@ -25,6 +25,8 @@ code {
   --tg-surface-strong: #ffffff;
   --tg-outline-soft: rgba(36, 44, 74, 0.12);
   --tg-sheet-footer-gradient: linear-gradient(180deg, rgba(244, 245, 251, 0) 0%, rgba(244, 245, 251, 0.9) 65%);
+  --glass-hi: rgba(255,255,255,.06);
+  --glass-lo: rgba(17,19,33,.06);
 }
 
 body{
@@ -47,4 +49,6 @@ body.dark {
   --tg-surface-strong: #1c2030;
   --tg-outline-soft: rgba(124, 130, 166, 0.18);
   --tg-sheet-footer-gradient: linear-gradient(180deg, rgba(15, 17, 24, 0) 0%, rgba(15, 17, 24, 0.9) 65%);
+  --glass-hi: rgba(255,255,255,.04);
+  --glass-lo: rgba(0,0,0,.12);
 }
