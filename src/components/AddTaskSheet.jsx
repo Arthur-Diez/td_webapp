@@ -123,10 +123,10 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         const start = (startMinutes + offset * QUARTER + MINUTES_IN_DAY) % MINUTES_IN_DAY;
         return {
           value: start,
-          label: formatTime(start),
+          label: formatIntervalLabel(start, duration, noEnd),
         };
       }),
-    [startMinutes]
+    [startMinutes, duration, noEnd]
   );
 
   const totalHuman = useMemo(() => {

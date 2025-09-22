@@ -33,7 +33,7 @@
 .wheel-mask {
   pointer-events: none;
   position: absolute; inset: 0;
-  background: linear-gradient(var(--tg-surface), rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, var(--tg-surface));
+  background: linear-gradient(180deg, var(--glass-hi) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, var(--glass-lo) 100%);
 }
 .wheel-focus {
   pointer-events: none;
@@ -56,16 +56,18 @@
 }
 
 .wheel--interval {
-  width: 148px;
+  width: min(260px, 100%);
 }
 .wheel--interval .wheel-item {
   font-size: 15px;
   letter-spacing: 0.01em;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .wheel--interval .wheel-focus {
   display: none;
 }
 .wheel--interval .wheel-mask {
-  background: linear-gradient(var(--tg-surface), rgba(0,0,0,0) 25%, rgba(0,0,0,0) 75%, var(--tg-surface));
+  background: linear-gradient(180deg, var(--glass-hi) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 75%, var(--glass-lo) 100%);
 }

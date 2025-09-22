@@ -228,7 +228,8 @@
   content:"";
   position:absolute; inset:0; border-radius:inherit;
   /* тема-безопасный градиент без «пересвета» */
-  background: linear-gradient(180deg, var(--glass-hi) 0%, transparent 45%, var(--glass-lo) 100%);
+  background: linear-gradient(180deg, var(--glass-hi) 0%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0) 55%, var(--glass-lo) 100%);
+  pointer-events: none;
 }
 .time-inline--two { grid-template-columns: repeat(2, minmax(68px, 1fr)); }
 .time-inline--interval {
