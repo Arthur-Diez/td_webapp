@@ -27,6 +27,29 @@ code {
   --tg-sheet-footer-gradient: linear-gradient(180deg, rgba(244, 245, 251, 0) 0%, rgba(244, 245, 251, 0.9) 65%);
   --glass-hi: rgba(255,255,255,.06);
   --glass-lo: rgba(17,19,33,.06);
+
+  --tabbar-bg: rgba(255, 255, 255, 0.92);
+  --tabbar-border: rgba(17, 19, 33, 0.08);
+  --tabbar-muted: rgba(17, 19, 33, 0.58);
+  --tabbar-active: var(--tg-accent);
+  --tabbar-active-fg: #ffffff;
+  --tabbar-active-shadow: rgba(94, 92, 230, 0.28);
+  --tabbar-shadow: rgba(0, 0, 0, 0.12);
+
+  --fab-accent: var(--tg-accent);
+  --fab-foreground: #ffffff;
+  --fab-shadow: rgba(17, 19, 33, 0.26);
+
+  --timeline-surface: rgba(255, 255, 255, 0.86);
+  --timeline-border: rgba(17, 19, 33, 0.1);
+  --timeline-border-soft: rgba(17, 19, 33, 0.08);
+  --timeline-text-dim: rgba(17, 19, 33, 0.72);
+  --timeline-text-faint: rgba(17, 19, 33, 0.55);
+  --timeline-line-solid: rgba(17, 19, 33, 0.16);
+  --timeline-line-dash: rgba(17, 19, 33, 0.1);
+  --timeline-pin-inset: rgba(17, 19, 33, 0.06);
+  --timeline-pin-stroke: rgba(17, 19, 33, 0.12);
+  --timeline-card-shadow: rgba(17, 19, 33, 0.12);
 }
 
 body{
@@ -51,4 +74,27 @@ body.dark {
   --tg-sheet-footer-gradient: linear-gradient(180deg, rgba(15, 17, 24, 0) 0%, rgba(15, 17, 24, 0.9) 65%);
   --glass-hi: rgba(255,255,255,.04);
   --glass-lo: rgba(0,0,0,.12);
+
+  --tabbar-bg: rgba(15, 17, 24, 0.94);
+  --tabbar-border: rgba(243, 244, 255, 0.08);
+  --tabbar-muted: rgba(243, 244, 255, 0.62);
+  --tabbar-active: var(--tg-accent);
+  --tabbar-active-fg: #0f1118;
+  --tabbar-active-shadow: rgba(124, 123, 255, 0.35);
+  --tabbar-shadow: rgba(0, 0, 0, 0.45);
+
+  --fab-accent: var(--tg-accent);
+  --fab-foreground: #0f1118;
+  --fab-shadow: rgba(0, 0, 0, 0.48);
+
+  --timeline-surface: rgba(28, 32, 44, 0.9);
+  --timeline-border: rgba(124, 130, 166, 0.22);
+  --timeline-border-soft: rgba(124, 130, 166, 0.16);
+  --timeline-text-dim: rgba(243, 244, 255, 0.78);
+  --timeline-text-faint: rgba(243, 244, 255, 0.62);
+  --timeline-line-solid: rgba(243, 244, 255, 0.34);
+  --timeline-line-dash: rgba(243, 244, 255, 0.2);
+  --timeline-pin-inset: rgba(255, 255, 255, 0.05);
+  --timeline-pin-stroke: rgba(255, 255, 255, 0.24);
+  --timeline-card-shadow: rgba(0, 0, 0, 0.45);
 }

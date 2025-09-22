@@ -16,7 +16,6 @@ import './App.css';
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [debugText, setDebugText] = useState('⏳ Инициализация...');
   const [consoleData, setConsoleData] = useState('🧾 Консоль запущена...');
   const [activeTab, setActiveTab] = useState('tasks');
   const [selectedDate, setSelectedDate] = useState(currentDate);
@@ -36,7 +35,6 @@ export default function App() {
 
         const now = new Date();
         const utcTimestamp = now.getTime() + now.getTimezoneOffset() * 60000;
-        const nowUTC = new Date(utcTimestamp);
         const localTime = new Date(utcTimestamp + offsetMin * 60000);
 
         const tgId = WebApp.initDataUnsafe?.user?.id;
@@ -60,17 +58,11 @@ export default function App() {
 
         setConsoleData(prev => prev + `\n📅 Дата: ${localTime.toLocaleDateString('en-CA')}`);
 
-        setDebugText(
-          `✅ Смещение: ${offsetMin} мин\n` +
-          `🌐 UTC: ${nowUTC.toISOString()}\n` +
-          `📅 Локальное время: ${localTime.toLocaleString()}`
-        );
-      } catch (err) {
+        } catch (err) {
         console.error('⛔ Ошибка в initDate:', err);
         setConsoleData(prev => prev + `\n⛔ Ошибка в initDate: ${err.message}`);
-        setDebugText('❌ Ошибка получения смещения');
         setCurrentDate(new Date());
-      }
+        }
     }
 
     initDate();
@@ -106,18 +98,7 @@ export default function App() {
           <p style={{ textAlign: 'center', marginTop: 40 }}>🎯 Фокус — скоро ✨</p>
         )}
 
-        <pre
-          style={{
-            background: '#f0f0f0',
-            color: '#333',
-            fontSize: '12px',
-            padding: '12px',
-            margin: '12px auto',
-            maxWidth: '90%',
-            borderRadius: '8px',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
+        <pre className="debug-console">
           {consoleData}
         </pre>
       </main>

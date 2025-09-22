@@ -1,11 +1,3 @@
-:root{
-  --tabbar-h: 64px;
-  --tabbar-bg: var(--tg-bg, #101115);
-  --tabbar-border: rgba(255,255,255,.12);
-  --tabbar-muted: rgba(255,255,255,.72);
-  --tabbar-active: #ff6b6b;   /* временный акцент */
-}
-
 .bottom-tabbar{
   position: fixed;
   left: 0; right: 0; bottom: 0;
@@ -13,6 +5,8 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--tabbar-bg);
   border-top: 1px solid var(--tabbar-border);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 -12px 32px var(--tabbar-shadow);
   display: flex;
   justify-content: space-around;
   z-index: 1000;
@@ -29,12 +23,17 @@
 .icon-wrap{
   width: 36px; height: 36px; border-radius: 999px;
   display: grid; place-items: center;
-  transition: transform .12s ease, box-shadow .12s ease, color .12s ease;
+  transition: transform .12s ease, box-shadow .12s ease, color .12s ease, background .12s ease;
+}
+
+.tab-btn.active{
+  color: var(--tabbar-active);
 }
 
 .tab-btn.active .icon-wrap{
-  box-shadow: 0 0 0 2px var(--tabbar-active) inset;
-  color: #fff;
+  background: var(--tabbar-active);
+  color: var(--tabbar-active-fg);
+  box-shadow: 0 10px 22px var(--tabbar-active-shadow);
 }
 
 .tab-btn:active .icon-wrap{ transform: scale(.96); }

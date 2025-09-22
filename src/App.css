@@ -7,23 +7,17 @@
   padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom, 0px));
 }
 
-/* FAB поверх таббара и не обрезается */
-.fab-button {
-  position: fixed;
-  bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom, 0px));
-  right: 16px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background-color: var(--tg-accent);
-  color: #fff;
-  font-size: 30px;
-  border: none;
-  box-shadow: 0 4px 10px rgba(0,0,0,.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1002; /* выше таббара */
+.debug-console {
+  background: var(--tg-surface);
+  color: var(--tg-fg);
+  font-size: 12px;
+  padding: 12px;
+  margin: 12px auto;
+  max-width: 90%;
+  border-radius: 12px;
+  border: 1px solid var(--tg-outline-soft);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  white-space: pre-wrap;
 }
 
 body, html {

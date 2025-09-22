@@ -10,18 +10,20 @@
   --tl-card-radius: 14px;
   --tl-pin-size: 44px;
 
-  /* цвета (можно переопределить темой Telegram) */
-  --tl-surface: var(--tg-bg);
-  --tl-border: rgba(255,255,255,.16);
-  --tl-border-soft: rgba(255,255,255,.12);
-  --tl-text-dim: rgba(255,255,255,.78);
-  --tl-text-faint: rgba(255,255,255,.62);
+  /* цвета переопределяются через глобальные токены */
+  --tl-surface: var(--timeline-surface);
+  --tl-border: var(--timeline-border);
+  --tl-border-soft: var(--timeline-border-soft);
+  --tl-text-dim: var(--timeline-text-dim);
+  --tl-text-faint: var(--timeline-text-faint);
 
-  --tl-line-solid: rgba(255,255,255,.42);
-  --tl-line-dash:  rgba(255,255,255,.22);
+  --tl-line-solid: var(--timeline-line-solid);
+  --tl-line-dash:  var(--timeline-line-dash);
   --tl-line-clear: 4px;     /* отступ линии от края круга */
   --tl-line-w: 2px;       /* толщина соединителя, можно 3px */
   --tl-row-vpad: 10px; /* вертикальный паддинг строки */
+  --tl-pin-inset: var(--timeline-pin-inset);
+  --tl-pin-stroke: var(--timeline-pin-stroke);
 }
 
 .tl{ max-width: 880px; margin: 0 auto; padding: 0 4px 24px; }
@@ -82,8 +84,8 @@
   display: grid; place-items: center;
   font-weight: 700; color: var(--tl-text-dim);
   box-shadow:
-    0 0 0 10px rgba(255,255,255,.06) inset,
-    0 0 0 1px rgba(255,255,255,.25);
+    0 0 0 10px var(--tl-pin-inset) inset,
+    0 0 0 1px var(--tl-pin-stroke);
 }
 
 /* ===== Соединители (вертикальные линии) рисуем у каждого пина ===== */
@@ -161,6 +163,8 @@
   border: 1px solid var(--tl-border);
   border-radius: var(--tl-card-radius);
   padding: 12px 14px;
+  background: var(--tl-surface);
+  box-shadow: 0 14px 32px var(--timeline-card-shadow);
 }
 .tl-meta{ font-size: 12px; color: var(--tl-text-faint); margin-bottom: 4px; }
 .tl-title{ font-size: 16px; font-weight: 700; }
@@ -197,8 +201,8 @@
   display: grid; place-items: center;
   font-weight: 700; color: var(--tl-text-dim);
   box-shadow:
-    0 0 0 10px rgba(255,255,255,.06) inset,
-    0 0 0 1px rgba(255,255,255,.25);
+    0 0 0 10px var(--tl-pin-inset) inset,
+    0 0 0 1px var(--tl-pin-stroke);
 }
 .tl-ad-card{ border: 1px solid var(--tl-border); border-radius: var(--tl-card-radius); padding: 12px 14px; }
 

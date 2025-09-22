@@ -6,7 +6,10 @@ const Tab = ({ id, label, active, onChange, children }) => (
   <button
     className={`tab-btn ${active ? "active" : ""}`}
     onClick={() => onChange(id)}
+    type="button"
+    role="tab"
     aria-selected={active}
+    tabIndex={active ? 0 : -1}
   >
     <span className="icon-wrap">{children}</span>
     <span className="label">{label}</span>

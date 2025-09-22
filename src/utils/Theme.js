@@ -18,6 +18,16 @@ export function applyTelegramTheme() {
     }
   });
 
+  const scheme = WebApp.colorScheme;
+  const mediaDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  const isDark = typeof WebApp.isDarkTheme === 'boolean'
+    ? WebApp.isDarkTheme
+    : scheme
+      ? scheme === 'dark'
+      : !!mediaDark;
+
+  document.body.classList.toggle('dark', isDark);
+
   // ✅ Принудительно переключаем класс dark в зависимости от isDarkTheme
   document.body.classList.toggle('dark', WebApp.isDarkTheme === true);
 }

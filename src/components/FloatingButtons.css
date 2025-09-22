@@ -1,7 +1,6 @@
 :root{
   --fab-size: 56px;
   --fab-gap: 12px;
-  --fab-accent: #ff6b6b; /* временно */
 }
 
 .fab{
@@ -10,11 +9,17 @@
   bottom: calc(var(--tabbar-h) + var(--fab-gap) + env(safe-area-inset-bottom, 0px));
   width: var(--fab-size); height: var(--fab-size);
   border-radius: 999px; border: 0;
-  background: var(--fab-accent); color: #fff;
+  background: var(--fab-accent);
+  color: var(--fab-foreground);
   display: grid; place-items: center;
-  box-shadow: 0 10px 22px rgba(0,0,0,.28);
+  box-shadow: 0 10px 22px var(--fab-shadow);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
   z-index: 1200;
 }
+
+.fab:active { transform: scale(.96); }
 
 .fab-plus{
   font-size: 28px; line-height: 1; transform: translateY(-1px);

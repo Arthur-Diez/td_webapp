@@ -123,11 +123,23 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         const start = (startMinutes + offset * QUARTER + MINUTES_IN_DAY) % MINUTES_IN_DAY;
         return {
           value: start,
-          label: formatIntervalLabel(start, duration, noEnd),
+          label: formatTime(start),
         };
       }),
-    [startMinutes, duration, noEnd]
+    [startMinutes]
   );
+
+  useEffect(() => {
+    if (noEnd || allDay) return;
+    const aligned = Math.round(startMinutes / QUARTER) * QUARTER;
+    const normalized = ((aligned % MINUTES_IN_DAY) + MINUTES_IN_DAY) % MINUTES_IN_DAY;
+    if (normalized !== startMinutes) {
+      const h = Math.floor(normalized / 60);
+      const m = normalized % 60;
+      setSh(h);
+      setSm(m);
+    }
+  }, [allDay, noEnd, startMinutes]);
 
   const totalHuman = useMemo(() => {
     const m = duration, h = Math.floor(m / 60), mm = m % 60;
