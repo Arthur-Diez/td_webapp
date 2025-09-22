@@ -240,14 +240,19 @@
 }
 
 .interval-wheel {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   width: 100%;
+  padding: 8px 0 24px;
 }
 
-.interval-preview {
+.interval-current {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   padding: 12px 18px;
   border-radius: 16px;
   background: var(--tg-surface-strong);
@@ -255,10 +260,12 @@
   font-weight: 700;
   font-size: 16px;
   color: var(--tg-fg);
-  box-shadow: 0 12px 24px rgba(17, 19, 33, .12);
+  box-shadow: 0 12px 24px rgba(17, 19, 33, .14);
   text-align: center;
-  min-width: min(70%, 320px);
-  max-width: 100%;
+  min-width: min(72%, 320px);
+  max-width: calc(100% - 32px);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .chips {

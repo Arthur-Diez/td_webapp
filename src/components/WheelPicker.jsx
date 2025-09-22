@@ -16,13 +16,14 @@ export default function WheelPicker({
   const debounceRef = useRef(null);
 
   // для детекции «тапа»
-  const touch = useRef({ y0: 0, moved: false, t0: 0 });
+  const touch = useRef({ y0: 0, moved: false, t0: 0, active: false, justTapped: false });
 
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
     const idx = Math.max(0, values.findIndex((v) => v.value === value));
     el.scrollTop = idx * ITEM_H;
+    touch.current.moved = false;
   }, [value, values]);
 
   const snapAndChange = useCallback(() => {
@@ -36,16 +37,22 @@ export default function WheelPicker({
   }, [values, value, onChange]);
 
   const onScroll = () => {
-    touch.current.moved = true;
+    if (touch.current.active) touch.current.moved = true;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(snapAndChange, 80);
   };
 
-  const down = (y) => (touch.current = { y0: y, moved: false, t0: Date.now() });
+  const down = (y) => {
+    touch.current = { y0: y, moved: false, t0: Date.now(), active: true, justTapped: false };
+  };
   const up = (y) => {
     const dy = Math.abs(y - touch.current.y0);
     const dt = Date.now() - touch.current.t0;
-    if (!touch.current.moved && dy < 6 && dt < 300) onTap?.(); // «тап»
+    if (touch.current.active && !touch.current.moved && dy < 6 && dt < 300) {
+      onTap?.();
+      touch.current.justTapped = true;
+    }
+    touch.current.active = false;
   };
 
   return (
@@ -54,8 +61,14 @@ export default function WheelPicker({
       aria-label={ariaLabel}
       onMouseDown={(e) => down(e.clientY)}
       onMouseUp={(e) => up(e.clientY)}
+      onMouseMove={() => { if (touch.current.active) touch.current.moved = true; }}
       onTouchStart={(e) => down(e.touches[0].clientY)}
       onTouchEnd={(e) => up(e.changedTouches[0].clientY)}
+      onTouchMove={(e) => { if (touch.current.active) touch.current.moved = true; }}
+      onClick={() => {
+        if (!touch.current.active && !touch.current.justTapped) onTap?.();
+        touch.current.justTapped = false;
+      }}
     >
       <div className="wheel-viewport" ref={viewportRef} onScroll={onScroll}>
         <div className="wheel-spacer" />

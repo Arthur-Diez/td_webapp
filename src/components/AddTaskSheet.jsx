@@ -116,16 +116,18 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     return d;
   }, [startDate, duration, allDay, noEnd]);
 
-  const intervalValues = useMemo(() => (
-    Array.from({ length: QUARTER_ITEMS }, (_, idx) => {
-      const offset = idx - QUARTER_CENTER;
-      const start = (startMinutes + offset * QUARTER + MINUTES_IN_DAY) % MINUTES_IN_DAY;
-      return {
-        value: start,
-        label: formatIntervalLabel(start, duration, noEnd),
-      };
-    })
-  ), [startMinutes, duration, noEnd]);
+  const intervalValues = useMemo(
+    () =>
+      Array.from({ length: QUARTER_ITEMS }, (_, idx) => {
+        const offset = idx - QUARTER_CENTER;
+        const start = (startMinutes + offset * QUARTER + MINUTES_IN_DAY) % MINUTES_IN_DAY;
+        return {
+          value: start,
+          label: formatTime(start),
+        };
+      }),
+    [startMinutes]
+  );
 
   const totalHuman = useMemo(() => {
     const m = duration, h = Math.floor(m / 60), mm = m % 60;
@@ -338,7 +340,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
                     onTap={() => openTimeSheet("interval")}
                     className={`wheel--interval ${pickedWheel === "interval" ? "wheel--picked" : ""}`}
                   />
-                  <div className="interval-preview">
+                  <div className="interval-current" aria-hidden>
                     {formatIntervalLabel(startMinutes, duration, noEnd)}
                   </div>
                 </div>

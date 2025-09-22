@@ -20,7 +20,7 @@ code {
   --tg-btn-fg: #111321;
   --tg-muted: #6f7385;
   --tg-border: #d8dbe9;
-  --tg-sheet-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 245, 251, 0.98) 100%);
+  --tg-sheet-bg: var(--tg-bg);
   --tg-surface: rgba(255, 255, 255, 0.9);
   --tg-surface-strong: #ffffff;
   --tg-outline-soft: rgba(36, 44, 74, 0.12);
@@ -42,7 +42,7 @@ body.dark {
   --tg-btn-fg: #f3f4ff;
   --tg-muted: #9aa0b5;
   --tg-border: #272c3a;
-  --tg-sheet-bg: linear-gradient(180deg, rgba(22, 25, 35, 0.96) 0%, rgba(14, 17, 26, 0.98) 100%);
+  --tg-sheet-bg: var(--tg-bg);
   --tg-surface: rgba(28, 32, 44, 0.92);
   --tg-surface-strong: #1c2030;
   --tg-outline-soft: rgba(124, 130, 166, 0.18);
