@@ -13,6 +13,11 @@ code {
 }
 
 :root {
+  color-scheme: light dark;                /* native widgets */
+  --elev-1: 0 8px 16px rgba(17,19,33,.10);
+  --elev-2: 0 18px 36px rgba(17,19,33,.12);
+  --elev-3: 0 24px 46px rgba(17,19,33,.14);
+  --inner-hi: rgba(255,255,255,.20);       /* тонкий верхний блик */
   --tg-bg: #f4f5fb;
   --tg-fg: #111321;
   --tg-accent: #5e5ce6;
@@ -68,6 +73,11 @@ body{
 }
 
 body.dark {
+  color-scheme: dark;
+  --elev-1: 0 8px 16px rgba(0,0,0,.42);
+  --elev-2: 0 18px 36px rgba(0,0,0,.46);
+  --elev-3: 0 24px 48px rgba(0,0,0,.55);
+  --inner-hi: rgba(255,255,255,.06);       /* снижаем «пересвет» */
   --tg-bg: #0f1118;
   --tg-fg: #f3f4ff;
   --tg-accent: #7c7bff;

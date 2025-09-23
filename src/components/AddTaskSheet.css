@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  box-shadow: 0 -24px 48px rgba(0, 0, 0, .25);
+  box-shadow: var(--elev-3);
   font-family: "Inter", "SF Pro Display", "Roboto", system-ui, sans-serif;
   border: 1px solid var(--tg-outline-soft);
   backdrop-filter: blur(18px);
@@ -72,7 +72,7 @@
 }
 .sheet-close:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(17, 19, 33, .18);
+  box-shadow: var(--elev-1);
   }
 .sheet-close:active { transform: translateY(0); }
 .sheet-content {
@@ -89,7 +89,7 @@
   border-radius: 22px;
   background: var(--tg-surface);
   border: 1px solid var(--tg-outline-soft);
-  box-shadow: 0 18px 36px rgba(17, 19, 33, .08);
+  box-shadow: var(--elev-2);
   backdrop-filter: blur(12px);
 }
 .title-icon {
@@ -102,7 +102,7 @@
   font-size: 24px;
   color: var(--tg-accent);
   font-weight: 600;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25);
+  box-shadow: inset 0 1px 0 var(--inner-hi);
 }
 .title-input {
   flex: 1;
@@ -128,7 +128,7 @@
   transition: background .2s, border-color .2s, box-shadow .2s, transform .2s;
   backdrop-filter: blur(10px);
 }
-.row:hover { box-shadow: 0 12px 28px rgba(17, 19, 33, .12); transform: translateY(-1px); }
+.row:hover { box-shadow: var(--elev-2); transform: translateY(-1px); }
 .toggler {
   width: 100%;
   text-align: left;
@@ -206,10 +206,10 @@
   color: var(--tg-fg);
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(17, 19, 33, .08);
+  box-shadow: var(--elev-1);
   transition: box-shadow .2s, transform .2s;
 }
-.date-btn:hover { box-shadow: 0 14px 28px rgba(17, 19, 33, .12); transform: translateY(-1px); }
+.date-btn:hover { box-shadow: var(--elev-2); transform: translateY(-1px); }
 /* время */
 .time-inline {
   display: grid;
@@ -219,7 +219,7 @@
   border-radius: 22px;
   border: 1px solid var(--tg-outline-soft);
   background: var(--tg-surface);
-  box-shadow: 0 22px 46px rgba(17, 19, 33, .14);
+  box-shadow: var(--elev-3);
   position: relative;
   overflow: hidden;
   justify-items: center;
@@ -260,7 +260,7 @@
   font-weight: 700;
   font-size: 16px;
   color: var(--tg-fg);
-  box-shadow: 0 12px 24px rgba(17, 19, 33, .14);
+  box-shadow: var(--elev-2);
   text-align: center;
   min-width: min(72%, 320px);
   max-width: calc(100% - 32px);
@@ -285,7 +285,7 @@
   transition: background .2s, border-color .2s, color .2s, box-shadow .2s, transform .2s;
   backdrop-filter: blur(8px);
 }
-.chip:hover { box-shadow: 0 12px 28px rgba(17, 19, 33, .12); transform: translateY(-1px); }
+.chip:hover { box-shadow: var(--elev-2); transform: translateY(-1px); }
 .chip--active {
   background: var(--tg-accent);
   border-color: var(--tg-accent);
@@ -360,7 +360,7 @@
   border-radius: 18px;
   background: var(--tg-surface);
   border: 1px solid var(--tg-outline-soft);
-  box-shadow: 0 12px 24px rgba(17, 19, 33, .12);
+  box-shadow: var(--elev-2);
 }
 
 .subtask-text {
@@ -431,7 +431,7 @@
   color: var(--tg-fg);
   font-size: 15px;
   line-height: 1.5;
-  box-shadow: 0 12px 28px rgba(17, 19, 33, .12);
+  box-shadow: var(--elev-2);
   box-sizing: border-box;
 }
 
@@ -475,7 +475,7 @@
   transform: translateY(100%);
   transition: transform .2s ease-out;
   padding: 20px 20px 26px;
-  box-shadow: 0 -24px 44px rgba(17, 19, 33, .26);
+  box-shadow: var(--elev-3);
   border: 1px solid var(--tg-outline-soft);
   backdrop-filter: blur(18px);
 }
@@ -516,7 +516,7 @@
   border-radius: 20px;
   border: 1px solid var(--tg-outline-soft);
   background: var(--tg-surface);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 18px 32px rgba(17, 19, 33, .12);
+  box-shadow: inset 0 1px 0 var(--inner-hi), var(--elev-2);
 }
 .arrow { font-size: 18px; opacity: .6; color: var(--tg-muted); }
 
@@ -542,6 +542,7 @@
 /* ===== Тонкая настройка для тёмной темы ===== */
 body.dark .sheet-panel,
 body.dark .inner-sheet {
+  backdrop-filter: blur(12px);          /* было 18px — меньше «молока» */
   background: linear-gradient(180deg, rgba(22, 26, 38, 0.96) 0%, rgba(14, 17, 26, 0.96) 100%);
   box-shadow: 0 -24px 48px rgba(0, 0, 0, 0.55);
   border-color: rgba(124, 130, 166, 0.24);
@@ -559,7 +560,6 @@ body.dark .subtasks li,
 body.dark .notes {
   background: rgba(28, 32, 44, 0.9);
   border-color: rgba(124, 130, 166, 0.26);
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.4);
 }
 
 body.dark .chip--active {

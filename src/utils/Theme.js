@@ -27,7 +27,4 @@ export function applyTelegramTheme() {
       : !!mediaDark;
 
   document.body.classList.toggle('dark', isDark);
-
-  // ✅ Принудительно переключаем класс dark в зависимости от isDarkTheme
-  document.body.classList.toggle('dark', WebApp.isDarkTheme === true);
 }
