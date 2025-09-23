@@ -104,7 +104,9 @@ export default function App() {
       </main>
 
       <BottomTabBar active={activeTab} onChange={setActiveTab} />
-      <FloatingButtons onPlus={() => setIsAddOpen(true)} />
+      {!isAddOpen && (
+        <FloatingButtons onPlus={() => setIsAddOpen(true)} />
+      )}
         <AddTaskSheet
           open={isAddOpen}
           onClose={() => setIsAddOpen(false)}

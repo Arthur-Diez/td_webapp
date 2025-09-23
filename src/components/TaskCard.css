@@ -1,20 +1,22 @@
 .task-card {
-  background: #fff;
+  background: var(--task-card-bg);
   border-radius: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 28px var(--task-card-shadow);
   padding: 12px 16px;
   margin-bottom: 12px;
-  transition: background 0.3s;
+  transition: background 0.3s, box-shadow 0.3s, border-color 0.3s;
+  border: 1px solid var(--tg-outline-soft);
+  color: var(--tg-fg);
 }
 
 .task-card.overdue {
-  background: #ffeaea;
-  border-left: 5px solid #ff4d4f;
+  background: var(--task-card-overdue-bg);
+  border-left: 5px solid var(--task-card-overdue-border);
 }
 
 .task-time {
   font-size: 13px;
-  color: #666;
+  color: var(--task-card-muted);
   margin-bottom: 4px;
 }
 
@@ -26,11 +28,11 @@
 
 .task-desc {
   font-size: 14px;
-  color: #444;
+  color: var(--task-card-desc);
 }
 
 .task-card.expired {
-  background: #ffe5e5;
-  border-left: 6px solid red;
-  opacity: 0.8;
+  background: var(--task-card-expired-bg);
+  border-left: 6px solid var(--task-card-overdue-border);
+  opacity: 0.92;
 }

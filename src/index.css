@@ -28,6 +28,14 @@ code {
   --glass-hi: rgba(255,255,255,.06);
   --glass-lo: rgba(17,19,33,.06);
 
+  --task-card-bg: #ffffff;
+  --task-card-shadow: rgba(0, 0, 0, 0.08);
+  --task-card-muted: #666666;
+  --task-card-desc: #444444;
+  --task-card-overdue-bg: #ffeaea;
+  --task-card-overdue-border: #ff4d4f;
+  --task-card-expired-bg: #ffe5e5;
+
   --tabbar-bg: rgba(255, 255, 255, 0.92);
   --tabbar-border: rgba(17, 19, 33, 0.08);
   --tabbar-muted: rgba(17, 19, 33, 0.58);
@@ -68,12 +76,20 @@ body.dark {
   --tg-muted: #9aa0b5;
   --tg-border: #272c3a;
   --tg-sheet-bg: var(--tg-bg);
-  --tg-surface: rgba(28, 32, 44, 0.92);
-  --tg-surface-strong: #1c2030;
-  --tg-outline-soft: rgba(124, 130, 166, 0.18);
+  --tg-surface: rgba(24, 28, 40, 0.9);
+  --tg-surface-strong: #1c2130;
+  --tg-outline-soft: rgba(124, 130, 166, 0.22);
   --tg-sheet-footer-gradient: linear-gradient(180deg, rgba(15, 17, 24, 0) 0%, rgba(15, 17, 24, 0.9) 65%);
-  --glass-hi: rgba(255,255,255,.04);
-  --glass-lo: rgba(0,0,0,.12);
+  --glass-hi: rgba(124, 130, 166, 0.16);
+  --glass-lo: rgba(6, 8, 16, 0.58);
+
+  --task-card-bg: rgba(28, 32, 44, 0.92);
+  --task-card-shadow: rgba(0, 0, 0, 0.42);
+  --task-card-muted: #b5bad1;
+  --task-card-desc: #d3d7f0;
+  --task-card-overdue-bg: rgba(181, 52, 63, 0.26);
+  --task-card-overdue-border: #ff8b94;
+  --task-card-expired-bg: rgba(181, 52, 63, 0.3);
 
   --tabbar-bg: rgba(15, 17, 24, 0.94);
   --tabbar-border: rgba(243, 244, 255, 0.08);
