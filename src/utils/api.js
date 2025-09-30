@@ -1,5 +1,8 @@
 // src/utils/api.js
-export const API_BASE = 'https://api.freakdev.site';
+const PLACEHOLDER_BASE = '{{API_BASE}}';
+export const API_BASE =
+  process.env.REACT_APP_API_BASE ||
+  (PLACEHOLDER_BASE.startsWith('http') ? PLACEHOLDER_BASE : 'https://api.freakdev.site');
 export const api = (path) => `${API_BASE}${path}`;
 
 export async function getTasksForDate(telegramId, date, signal) {

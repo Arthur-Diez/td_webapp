@@ -7,6 +7,7 @@ import WeekStrip from './components/WeekStrip';
 import { applyTelegramTheme } from './utils/Theme';
 import { fetchUserTimezoneOffset } from './utils/timezone';
 import Tasks from './components/Tasks';
+import FriendsPage from './components/FriendsPage';
 import BottomTabBar from './components/BottomTabBar';
 import FloatingButtons from './components/FloatingButtons'; // оставляем, но теперь это новый FAB
 import AddTaskSheet from './components/AddTaskSheet';
@@ -92,7 +93,7 @@ export default function App() {
           <p style={{ textAlign: 'center', marginTop: 40 }}>👥 Группы — скоро ✨</p>
         )}
         {activeTab === 'friends' && (
-          <p style={{ textAlign: 'center', marginTop: 40 }}>🧑‍🤝‍🧑 Друзья — скоро ✨</p>
+          <FriendsPage telegramId={userId} />
         )}
         {activeTab === 'focus'   && (
           <p style={{ textAlign: 'center', marginTop: 40 }}>🎯 Фокус — скоро ✨</p>
