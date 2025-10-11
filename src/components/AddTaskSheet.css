@@ -339,6 +339,55 @@
 }
 .chip--toggle { text-align: center; }
 
+.template-hint {
+  font-size: 13px;
+  color: var(--tg-muted);
+}
+
+.template-error {
+  font-size: 13px;
+  color: #d93025;
+}
+
+.template-chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.template-chip {
+  border-radius: 16px;
+  border: 1px solid var(--tg-outline-soft);
+  background: var(--tg-surface);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+  text-align: left;
+}
+
+.template-chip--active {
+  border-color: var(--tg-accent);
+  box-shadow: var(--elev-1);
+}
+
+.template-chip__name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.template-chip__summary {
+  font-size: 13px;
+  color: var(--tg-muted);
+}
+
+.link--templates {
+  align-self: flex-start;
+}
+
 .colors {
   display: flex;
   gap: 14px;

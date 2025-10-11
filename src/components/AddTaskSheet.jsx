@@ -1,9 +1,18 @@
 // src/components/AddTaskSheet.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "./AddTaskSheet.css";
 import WheelPicker from "./WheelPicker";
 import RecurrenceModal from "./RecurrenceModal";
-import { createTask, getTimezone } from "../utils/api";
+import RepeatTemplateManager from "./RepeatTemplateManager";
+import {
+  createTask,
+  getTimezone,
+  getRepeatTemplates,
+  createRepeatTemplate,
+  updateRepeatTemplate,
+  deleteRepeatTemplate,
+  useRepeatTemplate,
+} from "../utils/api";
 import {
   DEFAULT_RECURRENCE,
   WEEKDAYS,
@@ -13,6 +22,9 @@ import {
   generateOccurrences,
   sanitizeRule,
   summarizeRecurrence,
+  payloadFromRule,
+  ruleFromPayload,
+  toUtcDate,
 } from "../utils/recurrence";
 
 const mm2 = (n) => String(n).padStart(2, "0");
@@ -101,6 +113,12 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   // «без временного интервала» (есть только время начала)
   const [noEnd, setNoEnd] = useState(false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+  const [repeatTemplateId, setRepeatTemplateId] = useState(null);
+  const [repeatTemplates, setRepeatTemplates] = useState([]);
+  const [isTemplateManagerOpen, setIsTemplateManagerOpen] = useState(false);
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [templateLoading, setTemplateLoading] = useState(false);
+  const [templateError, setTemplateError] = useState(null);
   // какое колесо пользователь «тапнул»: 'sh' | 'sm' | 'interval' | null
   const [pickedWheel, setPickedWheel] = useState(null);
   const openTimeSheet = (key) => { setPickedWheel(key); setIsTimePickerOpen(true); };
@@ -124,6 +142,33 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       .catch(() => {});
     return () => controller.abort();
   }, [open, telegramId]);
+
+  const loadTemplates = useCallback(
+    (signal) => {
+      if (!telegramId) return;
+      setTemplateLoading(true);
+      getRepeatTemplates(telegramId, signal)
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setRepeatTemplates(data);
+            setTemplateError(null);
+          }
+        })
+        .catch((err) => {
+          if (signal && err.name === "AbortError") return;
+          setTemplateError("Не удалось загрузить шаблоны");
+        })
+        .finally(() => setTemplateLoading(false));
+    },
+    [telegramId]
+  );
+
+  useEffect(() => {
+    if (!open || !telegramId) return undefined;
+    const controller = new AbortController();
+    loadTemplates(controller.signal);
+    return () => controller.abort();
+  }, [open, telegramId, loadTemplates]);
 
   const startDate = useMemo(() => {
     const d = new Date(localDate);
@@ -205,6 +250,9 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setCustomNotify({ hours: 0, minutes: 15 });
       setIsRecurrenceModalOpen(false);
       setSaveAsTemplate(false);
+      setRepeatTemplateId(null);
+      setTemplateSearch("");
+      setTemplateError(null);
     }
     // eslint-disable-next-line
   }, [open]);
@@ -248,6 +296,61 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     [recurrenceRule]
   );
 
+  const repeatUiPayload = useMemo(
+    () =>
+      sanitizedRecurrence
+        ? payloadFromRule({ rule: sanitizedRecurrence, startDate, allDay })
+        : null,
+    [sanitizedRecurrence, startDate, allDay]
+  );
+
+  const decoratedTemplates = useMemo(() => {
+    return repeatTemplates
+      .filter(Boolean)
+      .map((tpl) => {
+        const payload = tpl.payload || null;
+        if (!payload) return { ...tpl, summary: "" };
+        const base = new Date(startDate);
+        const hasTime = typeof payload.time === "string" && payload.time.length > 0;
+        const isAllDayFromPayload = !hasTime;
+        if (hasTime) {
+          const [h, m] = payload.time.split(":").map(Number);
+          if (!Number.isNaN(h) && !Number.isNaN(m)) {
+            base.setHours(h, m, 0, 0);
+          }
+        } else {
+          base.setHours(0, 0, 0, 0);
+        }
+        const rule = ruleFromPayload({ payload, startDate: base });
+        const summaryText = summarizeRecurrence({
+          rule,
+          startDate: base,
+          allDay: isAllDayFromPayload,
+          offsetMin: timezoneOffset,
+        });
+        return {
+          ...tpl,
+          payload,
+          rule,
+          allDay: isAllDayFromPayload,
+          summary: summaryText.replace(/^Повторяется\s*/i, "").trim(),
+        };
+      });
+  }, [repeatTemplates, startDate, timezoneOffset]);
+
+  const topTemplateChips = useMemo(() => decoratedTemplates.slice(0, 5), [decoratedTemplates]);
+
+  const activeTemplate = useMemo(
+    () => decoratedTemplates.find((tpl) => tpl.id === repeatTemplateId) || null,
+    [decoratedTemplates, repeatTemplateId]
+  );
+
+  useEffect(() => {
+    if (repeatTemplateId && !decoratedTemplates.some((tpl) => tpl.id === repeatTemplateId)) {
+      setRepeatTemplateId(null);
+    }
+  }, [decoratedTemplates, repeatTemplateId]);
+
   const cloneRecurrence = (rule) => {
     if (!rule) return null;
     return {
@@ -260,6 +363,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   };
 
   const applyRecurrencePreset = (updates) => {
+    setRepeatTemplateId(null);
     setRecurrenceRule((prev) => {
       const base = cloneRecurrence(sanitizeRule(prev || DEFAULT_RECURRENCE));
       if (!base) return sanitizeRule({ ...DEFAULT_RECURRENCE, ...updates });
@@ -278,6 +382,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   };
 
   const handleRepeatChip = (key) => {
+    setRepeatTemplateId(null);
     if (key === "once") {
       setRecurrenceRule(null);
       return;
@@ -309,6 +414,131 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         byMonthDay: [startDate.getDate()],
         bySetPos: null,
       });
+    }
+  };
+
+  const serializeRule = (rule) => {
+    if (!rule) return null;
+    return JSON.stringify({
+      freq: rule.freq,
+      interval: Number(rule.interval || 1),
+      byDay: [...rule.byDay].sort(),
+      byMonthDay: [...rule.byMonthDay].sort(),
+      bySetPos: typeof rule.bySetPos === "number" ? rule.bySetPos : null,
+      until: rule.until ? rule.until.getTime() : null,
+      count: rule.count || null,
+      exdates: [...rule.exdates].sort(),
+      rdates: rule.rdates
+        .map((d) => (d instanceof Date ? d.getTime() : new Date(d).getTime()))
+        .sort(),
+      skipPolicy: rule.skipPolicy || "skip",
+      shiftN: rule.skipPolicy === "shift_n" ? Number(rule.shiftN || 0) : null,
+    });
+  };
+
+  const applyTemplate = (template) => {
+    if (!template || !template.payload) return;
+    const payload = template.payload;
+    const hasTime = typeof payload.time === "string" && payload.time.length > 0;
+    if (hasTime) {
+      const [h, m] = payload.time.split(":").map(Number);
+      if (!Number.isNaN(h) && !Number.isNaN(m)) {
+        setAllDay(false);
+        setNoEnd(false);
+        setSh(h);
+        setSm(m);
+      }
+    } else {
+      setAllDay(true);
+      setNoEnd(false);
+    }
+    const base = new Date(localDate);
+    base.setSeconds(0, 0);
+    if (hasTime) {
+      const [h, m] = payload.time.split(":").map(Number);
+      if (!Number.isNaN(h) && !Number.isNaN(m)) {
+        base.setHours(h, m, 0, 0);
+      }
+    } else {
+      base.setHours(0, 0, 0, 0);
+    }
+    const nextRule = ruleFromPayload({ payload, startDate: base });
+    setRecurrenceRule(nextRule);
+    setRepeatTemplateId(template.id);
+    if (telegramId && template.id) {
+      useRepeatTemplate(template.id, telegramId).catch(() => {});
+    }
+  };
+
+  const handleCreateTemplateFromCurrent = async () => {
+    if (!telegramId) return;
+    if (!repeatUiPayload || !rruleString) {
+      alert("Сначала настройте повтор");
+      return;
+    }
+    const defaultName = recurrenceSummary
+      ? recurrenceSummary.replace(/^Повторяется\s*/i, "").split(".")[0]
+      : "Повтор";
+    const name = window.prompt("Название шаблона", defaultName || "Повтор");
+    if (!name || !name.trim()) return;
+    const body = {
+      uid: telegramId,
+      name: name.trim(),
+      payload: {
+        ...repeatUiPayload,
+        time: allDay ? null : `${mm2(startDate.getHours())}:${mm2(startDate.getMinutes())}`,
+      },
+      rrule: rruleString.startsWith("RRULE:") ? rruleString : `RRULE:${rruleString}`,
+    };
+    try {
+      await createRepeatTemplate(body);
+      loadTemplates();
+    } catch (e) {
+      alert("Не удалось сохранить шаблон");
+    }
+  };
+
+  const handleRenameTemplate = async (template, name) => {
+    if (!template?.id || !name.trim()) return;
+    try {
+      await updateRepeatTemplate(template.id, { name: name.trim() });
+      loadTemplates();
+    } catch (e) {
+      alert("Не удалось переименовать шаблон");
+    }
+  };
+
+  const handleTogglePinTemplate = async (template) => {
+    if (!template?.id) return;
+    const isPinned = template.pin_order !== null && template.pin_order !== undefined;
+    const nextPin = isPinned ? null : Date.now();
+    try {
+      await updateRepeatTemplate(template.id, { pin_order: nextPin });
+      loadTemplates();
+    } catch (e) {
+      alert("Не удалось обновить закрепление");
+    }
+  };
+
+  const handleSetDefaultTemplate = async (template) => {
+    if (!template?.id) return;
+    try {
+      await updateRepeatTemplate(template.id, { is_default: true });
+      loadTemplates();
+    } catch (e) {
+      alert("Не удалось установить шаблон по умолчанию");
+    }
+  };
+
+  const handleDeleteTemplate = async (template) => {
+    if (!template?.id) return;
+    if (!window.confirm(`Удалить шаблон «${template.name}»?`)) return;
+    try {
+      await deleteRepeatTemplate(template.id);
+      if (repeatTemplateId === template.id) setRepeatTemplateId(null);
+      loadTemplates();
+    } catch (e) {
+      alert("Не удалось удалить шаблон");
     }
   };
 
@@ -348,30 +578,43 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     }
   }, [sanitizedRecurrence, startDate]);
 
+  const sanitizedWithTime = useMemo(() => {
+    if (!sanitizedRecurrence) return null;
+    const next = { ...sanitizedRecurrence };
+    if (allDay) next.time = null;
+    else next.time = `${mm2(startDate.getHours())}:${mm2(startDate.getMinutes())}`;
+    return next;
+  }, [sanitizedRecurrence, startDate, allDay]);
+
   const recurrenceSummary = useMemo(
     () =>
-      sanitizedRecurrence
+      sanitizedWithTime
         ? summarizeRecurrence({
-            rule: sanitizedRecurrence,
+            rule: sanitizedWithTime,
             startDate,
             allDay,
             offsetMin: timezoneOffset,
           })
         : null,
-    [sanitizedRecurrence, startDate, allDay, timezoneOffset]
+    [sanitizedWithTime, startDate, allDay, timezoneOffset]
   );
 
   const recurrencePreviewDates = useMemo(
     () =>
-      sanitizedRecurrence
+      sanitizedWithTime
         ? generateOccurrences({
-            rule: sanitizedRecurrence,
+            rule: sanitizedWithTime,
             startDate,
             offsetMin: timezoneOffset,
             count: 6,
           })
         : [],
-    [sanitizedRecurrence, startDate, timezoneOffset]
+    [sanitizedWithTime, startDate, timezoneOffset]
+  );
+
+  const rruleString = useMemo(
+    () => (sanitizedWithTime ? buildRRuleString(sanitizedWithTime, timezoneOffset) : null),
+    [sanitizedWithTime, timezoneOffset]
   );
 
   const formatOccurrence = (date) => {
@@ -405,33 +648,80 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       all_day: allDay,
     };
 
-    if (sanitizedRecurrence) {
-      const rrule = buildRRuleString(sanitizedRecurrence, timezoneOffset);
-      if (!rrule) {
+    let templatePayload = null;
+
+    if (sanitizedWithTime) {
+      if (!rruleString) {
         alert("Не удалось сформировать правило повторения");
         return;
       }
-      const recur = {
-        rrule,
-        skip_policy: sanitizedRecurrence.skipPolicy || "skip",
-      };
-      if (sanitizedRecurrence.until) {
-        recur.until = formatWithOffset(sanitizedRecurrence.until, timezoneOffset);
+      const rruleFull = rruleString.startsWith("RRULE:") ? rruleString : `RRULE:${rruleString}`;
+      payload.recur_rule = rruleFull;
+      payload.skip_policy = sanitizedWithTime.skipPolicy || "skip";
+      payload.recur_until = sanitizedWithTime.until
+        ? toUtcDate(sanitizedWithTime.until, timezoneOffset)?.toISOString()
+        : null;
+      payload.exdates = sanitizedWithTime.exdates?.length ? sanitizedWithTime.exdates : [];
+      payload.rdates = sanitizedWithTime.rdates?.length
+        ? sanitizedWithTime.rdates
+            .map((d) => {
+              const dt = d instanceof Date ? d : new Date(d);
+              if (Number.isNaN(dt.getTime())) return null;
+              const utc = toUtcDate(dt, timezoneOffset);
+              return utc ? utc.toISOString() : null;
+            })
+            .filter(Boolean)
+        : [];
+      if (sanitizedWithTime.skipPolicy === "shift_n" && sanitizedWithTime.shiftN) {
+        payload.shift_n = sanitizedWithTime.shiftN;
+      } else {
+        payload.shift_n = null;
       }
-      if (sanitizedRecurrence.exdates.length) {
-        recur.exdates = sanitizedRecurrence.exdates;
+      if (repeatTemplateId) {
+        payload.repeat_template_id = repeatTemplateId;
       }
-      if (sanitizedRecurrence.rdates.length) {
-        recur.rdates = sanitizedRecurrence.rdates.map((d) => formatWithOffset(d, timezoneOffset));
+      } else {
+      payload.recur_rule = null;
+      payload.recur_until = null;
+      payload.exdates = [];
+      payload.rdates = [];
+      payload.skip_policy = undefined;
+      payload.shift_n = null;
+      delete payload.repeat_template_id;
+    }
+
+    if (saveAsTemplate && sanitizedWithTime && repeatUiPayload && rruleString) {
+      const defaultName = recurrenceSummary
+        ? recurrenceSummary.replace(/^Повторяется\s*/i, "").split(".")[0]
+        : "Повтор";
+      const name = window.prompt("Название шаблона", defaultName || "Повтор");
+      if (name && name.trim()) {
+        const makeDefault = window.confirm("Сделать шаблон по умолчанию?");
+        templatePayload = {
+          uid: telegramId,
+          name: name.trim(),
+          payload: {
+            ...repeatUiPayload,
+            time: allDay ? null : `${mm2(startDate.getHours())}:${mm2(startDate.getMinutes())}`,
+          },
+          rrule: rruleString.startsWith("RRULE:") ? rruleString : `RRULE:${rruleString}`,
+          is_default: makeDefault || undefined,
+        };
       }
-      if (sanitizedRecurrence.skipPolicy === "shift_n" && sanitizedRecurrence.shiftN) {
-        recur.shift_n = sanitizedRecurrence.shiftN;
-      }
-      payload.recur = recur;
     }
 
     try { await createTask(payload); onClose(); }
     catch (e) { alert(`Ошибка сохранения: ${e.message}`); }
+
+    if (templatePayload) {
+      try {
+        await createRepeatTemplate(templatePayload);
+        loadTemplates();
+        setSaveAsTemplate(false);
+      } catch (e) {
+        alert("Задача создана, но шаблон сохранить не удалось");
+      }
+    }
   };
 
   // ==== обработчики инлайн-колёс ====
@@ -628,6 +918,32 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
                 </button>
               ))}
             </div>
+            {templateLoading && <div className="template-hint">Загружаем шаблоны…</div>}
+            {templateError && <div className="template-error">{templateError}</div>}
+            {topTemplateChips.length > 0 && (
+              <div className="template-chip-list">
+                {topTemplateChips.map((tpl) => (
+                  <button
+                    type="button"
+                    key={tpl.id}
+                    className={`template-chip ${repeatTemplateId === tpl.id ? "template-chip--active" : ""}`}
+                    onClick={() => applyTemplate(tpl)}
+                  >
+                    <span className="template-chip__name">{tpl.name}</span>
+                    {tpl.summary && (
+                      <span className="template-chip__summary">{tpl.summary}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              className="link link--templates"
+              onClick={() => setIsTemplateManagerOpen(true)}
+            >
+              Мои шаблоны
+            </button>
             {recurrenceSummary && (
               <div className="recurrence-preview">
                 <div className="recurrence-preview__summary">{recurrenceSummary}</div>
@@ -873,9 +1189,42 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       <RecurrenceModal
         open={isRecurrenceModalOpen}
         onClose={() => setIsRecurrenceModalOpen(false)}
-        onApply={(rule) => setRecurrenceRule(cloneRecurrence(rule))}
+        onApply={({ rule }) => {
+          const nextRule = cloneRecurrence(rule);
+          const matchesTemplate =
+            repeatTemplateId && activeTemplate
+              ? serializeRule(nextRule) === serializeRule(activeTemplate.rule)
+              : false;
+          if (!matchesTemplate) {
+            setRepeatTemplateId(null);
+          }
+          setRecurrenceRule(nextRule);
+        }}
         startDate={startDate}
-        initialRule={cloneRecurrence(sanitizedRecurrence || sanitizeRule(DEFAULT_RECURRENCE))}
+        initialRule={cloneRecurrence(
+          sanitizedWithTime || sanitizeRule({ ...DEFAULT_RECURRENCE })
+        )}
+        allDay={allDay}
+        timezoneOffset={timezoneOffset}
+        templates={topTemplateChips}
+        onApplyTemplate={applyTemplate}
+        onManageTemplates={() => setIsTemplateManagerOpen(true)}
+        activeTemplateId={repeatTemplateId}
+      />
+      <RepeatTemplateManager
+        open={isTemplateManagerOpen}
+        templates={decoratedTemplates}
+        onClose={() => setIsTemplateManagerOpen(false)}
+        onApply={applyTemplate}
+        onCreateFromCurrent={handleCreateTemplateFromCurrent}
+        onRename={handleRenameTemplate}
+        onTogglePin={handleTogglePinTemplate}
+        onSetDefault={handleSetDefaultTemplate}
+        onDelete={handleDeleteTemplate}
+        searchValue={templateSearch}
+        onSearchChange={setTemplateSearch}
+        loading={templateLoading}
+        error={templateError}
       />
     </div>
   );

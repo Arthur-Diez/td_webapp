@@ -2,9 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_RECURRENCE,
   WEEKDAYS,
+  buildRRuleString,
   formatDateInput,
   formatDateTimeInput,
+  generateOccurrences,
   sanitizeRule,
+  summarizeRecurrence,
 } from "../utils/recurrence";
 import "./RecurrenceModal.css";
 
@@ -24,9 +27,26 @@ const freqOptions = [
   { value: "MONTHLY", label: "месяцев" },
 ];
 
+const SKIP_OPTIONS = [
+  { value: "skip", label: "Пропустить" },
+  { value: "next_weekday", label: "Следующий будний" },
+  { value: "shift_n", label: "Сдвиг на N минут" },
+];
+
 const DEFAULT_SHIFT = 30;
 
-const cloneRule = (rule) => ({ ...DEFAULT_RECURRENCE, ...sanitizeRule(rule || {}) });
+const pad = (n) => String(n).padStart(2, "0");
+
+const hintText = {
+  weekdays: "Если выбраны дни недели — используется недельная периодичность.",
+  monthDays:
+    "Если выбраны числа — используется месячная периодичность. «Последний день месяца» учитывает 28/29/30/31 автоматически.",
+};
+
+const cloneRule = (rule) => ({
+  ...DEFAULT_RECURRENCE,
+  ...sanitizeRule(rule || {}),
+});
 
 export default function RecurrenceModal({
   open,
@@ -34,12 +54,19 @@ export default function RecurrenceModal({
   onApply,
   startDate,
   initialRule,
+  allDay,
+  timezoneOffset,
+  templates,
+  onApplyTemplate,
+  onManageTemplates,
+  activeTemplateId,
 }) {
   const [rule, setRule] = useState(cloneRule(initialRule));
   const [showCustom, setShowCustom] = useState(false);
   const [quickEveryN, setQuickEveryN] = useState(2);
   const [quickEveryUnit, setQuickEveryUnit] = useState("DAILY");
   const [monthWeekDay, setMonthWeekDay] = useState("MO");
+  const [validationError, setValidationError] = useState(null);
 
   useEffect(() => {
     if (open) {
@@ -50,11 +77,15 @@ export default function RecurrenceModal({
       } else {
         setMonthWeekDay("MO");
       }
+      setValidationError(null);
     }
   }, [open, initialRule]);
 
   const updateRule = (updates) => {
-    setRule((prev) => ({ ...prev, ...updates }));
+    setRule((prev) => ({
+      ...prev,
+      ...updates,
+    }));
   };
 
   const toggleWeekday = (day) => {
@@ -73,7 +104,9 @@ export default function RecurrenceModal({
   const toggleMonthDay = (value) => {
     setRule((prev) => {
       const exists = prev.byMonthDay.includes(value);
-      const next = exists ? prev.byMonthDay.filter((d) => d !== value) : [...prev.byMonthDay, value];
+      const next = exists
+        ? prev.byMonthDay.filter((d) => d !== value)
+        : [...prev.byMonthDay, value];
       return {
         ...prev,
         freq: next.length ? "MONTHLY" : prev.freq,
@@ -85,7 +118,7 @@ export default function RecurrenceModal({
 
   const applyMonthWeek = (pos) => {
     if (pos === null) {
-      updateRule({ bySetPos: null });
+      updateRule({ bySetPos: null, byDay: [] });
       return;
     }
     setRule((prev) => ({
@@ -210,10 +243,78 @@ export default function RecurrenceModal({
     []
   );
 
+  const ruleWithTime = useMemo(() => {
+    const next = cloneRule(rule);
+    if (!next) return null;
+    if (allDay) next.time = null;
+    else next.time = `${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`;
+    return next;
+  }, [rule, startDate, allDay]);
+
+  const previewDates = useMemo(
+    () =>
+      ruleWithTime
+        ? generateOccurrences({
+            rule: ruleWithTime,
+            startDate,
+            offsetMin: timezoneOffset,
+            count: 6,
+          })
+        : [],
+    [ruleWithTime, startDate, timezoneOffset]
+  );
+
+  const summary = useMemo(
+    () =>
+      ruleWithTime
+        ? summarizeRecurrence({
+            rule: ruleWithTime,
+            startDate,
+            allDay,
+            offsetMin: timezoneOffset,
+          })
+        : "Один раз",
+    [ruleWithTime, startDate, allDay, timezoneOffset]
+  );
+
+  useEffect(() => {
+    if (rule.freq === "WEEKLY" && rule.byDay.length === 0) {
+      setValidationError("Выберите хотя бы один день недели");
+      return;
+    }
+    if (rule.freq === "MONTHLY" && rule.byMonthDay.length === 0 && rule.bySetPos === null) {
+      setValidationError("Укажите числа месяца или неделю и день");
+      return;
+    }
+    if (rule.skipPolicy === "shift_n" && (!rule.shiftN || rule.shiftN <= 0)) {
+      setValidationError("Введите значение смещения (в минутах)");
+      return;
+    }
+    setValidationError(null);
+  }, [rule]);
+
   const handleSave = () => {
-    const cleaned = sanitizeRule(rule);
-    onApply(cleaned);
+    if (validationError) return;
+    if (!ruleWithTime) return;
+    const cleaned = cloneRule(ruleWithTime);
+    const rrule = buildRRuleString(cleaned, timezoneOffset);
+    onApply({
+      rule: cleaned,
+      summary,
+      preview: previewDates,
+      rruleString: rrule,
+    });
     onClose();
+  };
+
+  const formatOccurrence = (date) => {
+    if (!date) return "";
+    const opts = { day: "2-digit", month: "short" };
+    if (!allDay) {
+      opts.hour = "2-digit";
+      opts.minute = "2-digit";
+    }
+    return date.toLocaleString("ru-RU", opts);
   };
 
   return (
@@ -226,6 +327,40 @@ export default function RecurrenceModal({
             ×
           </button>
         </div>
+
+        {templates?.length > 0 && (
+          <div className="rec-modal__section">
+            <div className="rec-modal__section-title">
+              Мои шаблоны
+              {onManageTemplates && (
+                <button
+                  type="button"
+                  className="rec-modal__manage"
+                  onClick={onManageTemplates}
+                >
+                  Управлять
+                </button>
+              )}
+            </div>
+            <div className="rec-modal__template-grid">
+              {templates.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  className={`rec-modal__template-chip ${
+                    tpl.id === activeTemplateId ? "rec-modal__template-chip--active" : ""
+                  }`}
+                  onClick={() => onApplyTemplate?.(tpl)}
+                >
+                  <span className="rec-modal__template-name">{tpl.name}</span>
+                  {tpl.summary && (
+                    <span className="rec-modal__template-summary">{tpl.summary}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="rec-modal__section">
           <div className="rec-modal__section-title">Быстрые пресеты</div>
@@ -315,7 +450,9 @@ export default function RecurrenceModal({
                     <button
                       key={day.value}
                       type="button"
-                      className={`rec-modal__chip ${rule.byDay.includes(day.value) && !rule.bySetPos ? "rec-modal__chip--active" : ""}`}
+                      className={`rec-modal__chip ${
+                        rule.byDay.includes(day.value) && !rule.bySetPos ? "rec-modal__chip--active" : ""
+                      }`}
                       onClick={() => {
                         updateRule({ bySetPos: null });
                         toggleWeekday(day.value);
@@ -325,7 +462,7 @@ export default function RecurrenceModal({
                     </button>
                   ))}
                 </div>
-                <p className="rec-modal__hint">Если выбраны дни недели — используется недельная периодичность.</p>
+                <p className="rec-modal__hint">{hintText.weekdays}</p>
               </div>
 
               <div className="rec-modal__block">
@@ -335,7 +472,9 @@ export default function RecurrenceModal({
                     <button
                       type="button"
                       key={day}
-                      className={`rec-modal__chip ${rule.byMonthDay.includes(day) ? "rec-modal__chip--active" : ""}`}
+                      className={`rec-modal__chip ${
+                        rule.byMonthDay.includes(day) ? "rec-modal__chip--active" : ""
+                      }`}
                       onClick={() => {
                         updateRule({ bySetPos: null });
                         toggleMonthDay(day);
@@ -355,7 +494,7 @@ export default function RecurrenceModal({
                     Последний
                   </button>
                 </div>
-                <p className="rec-modal__hint">Если выбраны числа — используется месячная периодичность. При выборе «последний день месяца» учитываем 28/29/30/31 автоматически.</p>
+                <p className="rec-modal__hint">{hintText.monthDays}</p>
               </div>
 
               <div className="rec-modal__block">
@@ -447,13 +586,15 @@ export default function RecurrenceModal({
                     min={1}
                     className="rec-modal__number"
                     value={rule.count || ""}
-                    onChange={(e) => updateRule({ count: Math.max(1, Number(e.target.value) || 1), until: null })}
+                    onChange={(e) =>
+                      updateRule({ count: Math.max(1, Number(e.target.value) || 1), until: null })
+                    }
                   />
                 </div>
               </div>
 
               <div className="rec-modal__block">
-                <div className="rec-modal__block-title">Исключения (EXDATE)</div>
+                <div className="rec-modal__block-title">Исключения (пропустить даты)</div>
                 <div className="rec-modal__inline">
                   <input
                     type="date"
@@ -486,7 +627,7 @@ export default function RecurrenceModal({
               </div>
 
               <div className="rec-modal__block">
-                <div className="rec-modal__block-title">Дополнительные даты (RDATE)</div>
+                <div className="rec-modal__block-title">Дополнительные даты</div>
                 <div className="rec-modal__inline">
                   <input
                     type="datetime-local"
@@ -507,7 +648,9 @@ export default function RecurrenceModal({
                         onClick={() =>
                           setRule((prev) => ({
                             ...prev,
-                            rdates: prev.rdates.filter((d) => formatDateTimeInput(d) !== formatDateTimeInput(date)),
+                            rdates: prev.rdates.filter(
+                              (d) => formatDateTimeInput(d) !== formatDateTimeInput(date)
+                            ),
                           }))
                         }
                       >
@@ -521,11 +664,7 @@ export default function RecurrenceModal({
               <div className="rec-modal__block">
                 <div className="rec-modal__block-title">Политика переносов</div>
                 <div className="rec-modal__inline rec-modal__inline--wrap">
-                  {[
-                    { value: "skip", label: "Пропустить" },
-                    { value: "next_weekday", label: "Следующий будний" },
-                    { value: "shift_n", label: "Сдвиг на N минут" },
-                  ].map((option) => (
+                  {SKIP_OPTIONS.map((option) => (
                     <label key={option.value} className="rec-modal__radio">
                       <input
                         type="radio"
@@ -546,7 +685,9 @@ export default function RecurrenceModal({
                       className="rec-modal__number"
                       min={1}
                       value={rule.shiftN || DEFAULT_SHIFT}
-                      onChange={(e) => updateRule({ shiftN: Math.max(1, Number(e.target.value) || DEFAULT_SHIFT) })}
+                      onChange={(e) =>
+                        updateRule({ shiftN: Math.max(1, Number(e.target.value) || DEFAULT_SHIFT) })
+                      }
                     />
                   )}
                 </div>
@@ -555,11 +696,37 @@ export default function RecurrenceModal({
           )}
         </div>
 
+        <div className="rec-modal__preview">
+          <div className="rec-modal__summary">{summary}</div>
+          {previewDates.length > 0 && (
+            <div className="rec-modal__upcoming">
+              <div className="rec-modal__upcoming-title">Ближайшие повторения</div>
+              <div className="rec-modal__upcoming-list">
+                {previewDates.map((date, idx) => (
+                  <span key={`${date?.getTime?.() || idx}-${idx}`} className="rec-modal__upcoming-item">
+                    {formatOccurrence(date)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <p className="rec-modal__hint rec-modal__hint--footer">
+            «Последний день месяца» автоматически учтёт 28/29/30/31.
+          </p>
+        </div>
+
+        {validationError && <div className="rec-modal__error">{validationError}</div>}
+
         <div className="rec-modal__footer">
           <button type="button" className="rec-modal__btn rec-modal__btn--ghost" onClick={onClose}>
             Отмена
           </button>
-          <button type="button" className="rec-modal__btn" onClick={handleSave}>
+          <button
+            type="button"
+            className="rec-modal__btn"
+            onClick={handleSave}
+            disabled={!!validationError}
+          >
             Сохранить
           </button>
         </div>

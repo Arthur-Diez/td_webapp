@@ -36,6 +36,8 @@ export const DEFAULT_RECURRENCE = {
   byDay: [],
   byMonthDay: [],
   bySetPos: null,
+  weekDay: "MO",
+  time: null,
   until: null,
   count: null,
   exdates: [],
@@ -130,6 +132,13 @@ export function buildRRuleString(rule, offsetMin) {
   const byMonthDay = ensureArray(rule.byMonthDay);
   if (byMonthDay.length) parts.push(`BYMONTHDAY=${byMonthDay.join(",")}`);
   if (typeof rule.bySetPos === "number") parts.push(`BYSETPOS=${rule.bySetPos}`);
+  if (typeof rule.time === "string" && rule.time) {
+    const [h, m] = rule.time.split(":").map(Number);
+    if (!Number.isNaN(h) && !Number.isNaN(m)) {
+      parts.push(`BYHOUR=${h}`);
+      parts.push(`BYMINUTE=${m}`);
+    }
+  }
   if (rule.count) parts.push(`COUNT=${rule.count}`);
   if (rule.until) {
     const until = formatRRuleUntil(rule.until, offsetMin);
@@ -298,6 +307,8 @@ export function sanitizeRule(rule) {
     byDay: ensureArray(rule.byDay),
     byMonthDay: ensureArray(rule.byMonthDay),
     bySetPos: typeof rule.bySetPos === "number" ? rule.bySetPos : null,
+    weekDay: rule.weekDay || ensureArray(rule.byDay)[0] || "MO",
+    time: typeof rule.time === "string" ? rule.time : null,
     until: rule.until instanceof Date ? rule.until : null,
     count: rule.count ? Number(rule.count) : null,
     exdates: ensureArray(rule.exdates),
@@ -305,4 +316,72 @@ export function sanitizeRule(rule) {
     skipPolicy: rule.skipPolicy || "skip",
     shiftN: rule.shiftN !== undefined && rule.shiftN !== null ? Number(rule.shiftN) : null,
   };
+}
+
+export function payloadFromRule({ rule, startDate, allDay }) {
+  if (!rule) return null;
+  const sanitized = sanitizeRule(rule);
+  if (!sanitized) return null;
+  const payload = {
+    freq: sanitized.freq,
+    interval: sanitized.interval,
+    byDay: [...sanitized.byDay],
+    byMonthDay: [...sanitized.byMonthDay],
+    bySetPos: sanitized.bySetPos,
+    weekDay: sanitized.weekDay,
+    time: allDay
+      ? null
+      : `${MM(startDate.getHours())}:${MM(startDate.getMinutes())}`,
+    until: sanitized.until ? formatDateInput(sanitized.until) : null,
+    count: sanitized.count || null,
+    exdates: [...sanitized.exdates],
+    rdates: sanitized.rdates.map((d) => formatDateTimeInput(d)),
+    skipPolicy: sanitized.skipPolicy,
+    shiftN: sanitized.skipPolicy === "shift_n" ? sanitized.shiftN || null : null,
+  };
+  return payload;
+}
+
+export function ruleFromPayload({ payload, startDate }) {
+  if (!payload) return null;
+  const base = sanitizeRule({
+    ...DEFAULT_RECURRENCE,
+    ...payload,
+    byDay: ensureArray(payload.byDay),
+    byMonthDay: ensureArray(payload.byMonthDay),
+    exdates: ensureArray(payload.exdates),
+    rdates: ensureArray(payload.rdates).map((d) => new Date(d)),
+  });
+
+  if (typeof payload.bySetPos === "number" && payload.weekDay) {
+    base.bySetPos = payload.bySetPos;
+    base.byDay = [payload.weekDay];
+  }
+
+  if (payload.until) {
+    const [y, m, d] = payload.until.split("-").map(Number);
+    if (!Number.isNaN(y) && !Number.isNaN(m) && !Number.isNaN(d)) {
+      const until = new Date(startDate);
+      until.setFullYear(y, m - 1, d);
+      until.setHours(23, 59, 59, 0);
+      base.until = until;
+      base.count = null;
+    }
+  }
+
+  if (payload.count) {
+    base.count = Number(payload.count) || null;
+    base.until = null;
+  }
+
+  if (payload.time && typeof payload.time === "string") {
+    const [h, mm] = payload.time.split(":").map(Number);
+    if (!Number.isNaN(h) && !Number.isNaN(mm)) {
+      const next = new Date(startDate);
+      next.setHours(h, mm, 0, 0);
+      base.time = `${MM(next.getHours())}:${MM(next.getMinutes())}`;
+    }
+  }
+
+  return base;
 }

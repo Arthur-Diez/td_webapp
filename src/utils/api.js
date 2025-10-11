@@ -32,3 +32,47 @@ export async function createTask(payload) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+export async function getRepeatTemplates(telegramId, signal) {
+  const res = await fetch(api(`/repeat-templates?uid=${telegramId}`), { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error(data?.error || 'Bad response');
+  return data;
+}
+
+export async function createRepeatTemplate(payload) {
+  const res = await fetch(api('/repeat-templates'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function updateRepeatTemplate(id, payload) {
+  const res = await fetch(api(`/repeat-templates/${id}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function deleteRepeatTemplate(id) {
+  const res = await fetch(api(`/repeat-templates/${id}`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function useRepeatTemplate(id, telegramId) {
+  const res = await fetch(api(`/repeat-templates/${id}/use?uid=${telegramId}`), {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}

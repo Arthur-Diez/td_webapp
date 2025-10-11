@@ -80,12 +80,23 @@
 .rec-modal__section-title {
   font-weight: 700;
   font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .rec-modal__preset-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
+}
+
+.rec-modal__manage {
+  border: none;
+  background: transparent;
+  color: var(--tg-accent);
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .rec-modal__preset {
@@ -172,6 +183,41 @@
 .rec-modal__block-title {
   font-weight: 700;
   font-size: 15px;
+}
+
+.rec-modal__template-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rec-modal__template-chip {
+  border-radius: 16px;
+  border: 1px solid var(--tg-outline-soft);
+  background: var(--tg-surface);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.rec-modal__template-chip--active {
+  border-color: var(--tg-accent);
+  box-shadow: var(--elev-1);
+}
+
+.rec-modal__template-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.rec-modal__template-summary {
+  font-size: 13px;
+  color: var(--tg-muted);
 }
 
 .rec-modal__inline {
@@ -282,6 +328,58 @@
   background: transparent;
   color: var(--tg-accent);
   border: 1px solid var(--tg-accent);
+}
+
+.rec-modal__preview {
+  border: 1px solid var(--tg-outline-soft);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--tg-surface);
+}
+
+.rec-modal__summary {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.rec-modal__upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rec-modal__upcoming-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.rec-modal__upcoming-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rec-modal__upcoming-item {
+  border-radius: 12px;
+  background: rgba(94, 92, 230, 0.12);
+  color: var(--tg-accent);
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.rec-modal__hint--footer {
+  margin-top: 4px;
+}
+
+.rec-modal__error {
+  background: rgba(255, 82, 82, 0.16);
+  color: #d93025;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
 }
 
 @media (max-width: 480px) {
