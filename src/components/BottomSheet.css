@@ -1,0 +1,70 @@
+.bottom-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  pointer-events: none;
+}
+
+.bottom-sheet__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.2s ease;
+}
+
+.bottom-sheet__panel {
+  pointer-events: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--tg-sheet-bg);
+  border-radius: 28px 28px 0 0;
+  box-shadow: var(--elev-3);
+  padding: 16px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 92vh;
+  overflow: hidden;
+  border: 1px solid var(--tg-outline-soft);
+  backdrop-filter: blur(18px);
+  transform: translateY(0);
+  animation: bottom-sheet-enter 0.24s ease;
+}
+
+.bottom-sheet__handle {
+  width: 64px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--tg-outline-soft);
+  align-self: center;
+  margin-bottom: 8px;
+}
+
+.bottom-sheet__title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.bottom-sheet__content {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
+}
+
+@keyframes bottom-sheet-enter {
+  from {
+    transform: translateY(12%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+body.bottom-sheet--locked {
+  overflow: hidden;
+}

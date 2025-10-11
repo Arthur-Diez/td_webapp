@@ -4,6 +4,8 @@ import "./AddTaskSheet.css";
 import WheelPicker from "./WheelPicker";
 import RecurrenceModal from "./RecurrenceModal";
 import RepeatTemplateManager from "./RepeatTemplateManager";
+import IconPicker from "./IconPicker";
+import ColorPickerSheet from "./ColorPickerSheet";
 import {
   createTask,
   getTimezone,
@@ -26,6 +28,7 @@ import {
   ruleFromPayload,
   toUtcDate,
 } from "../utils/recurrence";
+import { loadIcons } from "../utils/loadIcons";
 
 const mm2 = (n) => String(n).padStart(2, "0");
 const hours = Array.from({ length: 24 }, (_, h) => ({ label: mm2(h), value: h }));
@@ -40,7 +43,8 @@ const DUR_PRESETS = [
   { label: "1ч", m: 60 },
   { label: "1ч 30м", m: 90 },
 ];
-const COLORS = ["#F06292", "#FFB74D", "#FFD54F", "#AED581", "#64B5F6", "#81C784", "#BA68C8"];
+const COLOR_PRESETS = ["#6C5CE7", "#10B981", "#F59E0B", "#EF4444", "#3B82F6", "#A855F7"];
+const DEFAULT_COLOR = COLOR_PRESETS[0];
 const MINUTE_STEPS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => ({
   label: mm2(m),
   value: m,
@@ -50,6 +54,34 @@ const MINUTES_IN_DAY = 24 * 60;
 const QUARTER = 15;
 const QUARTER_ITEMS = MINUTES_IN_DAY / QUARTER; // 96 позиций
 const QUARTER_CENTER = Math.floor(QUARTER_ITEMS / 2);
+
+const normalizeHex = (input) => {
+  if (!input) return null;
+  let value = input.replace(/^#/, "").trim();
+  if (!value) return null;
+  if (!/^[0-9a-fA-F]+$/.test(value)) return null;
+  if (value.length === 3) {
+    value = value
+      .split("")
+      .map((ch) => ch + ch)
+      .join("");
+  }
+  if (value.length < 6) return null;
+  value = value.slice(0, 6);
+  return `#${value.toUpperCase()}`;
+};
+
+const contrastForHex = (hex) => {
+  if (!hex) return "#FFFFFF";
+  const normalized = normalizeHex(hex);
+  const source = normalized ? normalized.slice(1) : hex.replace(/^#/, "");
+  if (source.length < 6) return "#FFFFFF";
+  const r = parseInt(source.slice(0, 2), 16);
+  const g = parseInt(source.slice(2, 4), 16);
+  const b = parseInt(source.slice(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 150 ? "#111321" : "#FFFFFF";
+};
 
 const formatTime = (totalMinutes) => {
   const minutes = ((totalMinutes % MINUTES_IN_DAY) + MINUTES_IN_DAY) % MINUTES_IN_DAY;
@@ -99,7 +131,8 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   const [sm, setSm] = useState(defStart.getMinutes());                // минуты начала (могут быть не кратно 15)
   const [duration, setDuration] = useState(15);                       // мин
 
-  const [color, setColor] = useState(COLORS[0]);
+  const [iconKey, setIconKey] = useState(null);
+  const [colorHex, setColorHex] = useState(DEFAULT_COLOR);
   const [recurrenceRule, setRecurrenceRule] = useState(null);
   const [isRecurrenceModalOpen, setIsRecurrenceModalOpen] = useState(false);
   const [timezoneOffset, setTimezoneOffset] = useState(-new Date().getTimezoneOffset());
@@ -110,6 +143,8 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isDurPickerOpen, setIsDurPickerOpen] = useState(false);
   const [isNotifyPickerOpen, setIsNotifyPickerOpen] = useState(false);
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   // «без временного интервала» (есть только время начала)
   const [noEnd, setNoEnd] = useState(false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
@@ -129,6 +164,18 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     beforeEnd15: false,
   });
   const [customNotify, setCustomNotify] = useState({ hours: 0, minutes: 15 });
+
+  const loadedIcons = useMemo(() => loadIcons(), []);
+  const iconComponentMap = useMemo(() => {
+    const map = new Map();
+    loadedIcons.forEach((entry) => {
+      map.set(entry.key, entry.Component);
+    });
+    return map;
+  }, [loadedIcons]);
+  const iconKeysSet = useMemo(() => new Set(loadedIcons.map((entry) => entry.key)), [loadedIcons]);
+  const SelectedIcon = iconKey ? iconComponentMap.get(iconKey) : null;
+  const iconContrastColor = useMemo(() => contrastForHex(colorHex), [colorHex]);
 
   useEffect(() => {
     if (!open || !telegramId) return undefined;
@@ -239,10 +286,13 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setNotes("");
       setSubtasks([]);
       setRecurrenceRule(null);
-      setColor(COLORS[0]);
+      setIconKey(null);
+      setColorHex(DEFAULT_COLOR);
       setIsTimePickerOpen(false);
       setIsDurPickerOpen(false);
       setIsNotifyPickerOpen(false);
+      setIsIconPickerOpen(false);
+      setIsColorPickerOpen(false);
       setLocalDate(baseDateProp);
       setPickedWheel(null);
       setNoEnd(false);
@@ -648,6 +698,18 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       all_day: allDay,
     };
 
+    const normalizedColor = normalizeHex(colorHex);
+    if (!normalizedColor) {
+      alert("Укажите корректный HEX цвет");
+      return;
+    }
+    if (iconKey && !iconKeysSet.has(iconKey)) {
+      alert("Выбранная иконка недоступна");
+      return;
+    }
+    payload.icon_key = iconKey;
+    payload.color_hex = normalizedColor;
+
     let templatePayload = null;
 
     if (sanitizedWithTime) {
@@ -767,7 +829,27 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         <div className="sheet-content">
           {/* Название + иконка слева */}
           <div className="title-row">
-            <div className="title-icon">@</div>
+            <div className="title-icon">
+              <button
+                type="button"
+                className="title-icon__button"
+                onClick={() => setIsIconPickerOpen(true)}
+                aria-label="Выбрать иконку"
+              >
+                <div
+                  className="title-icon__preview"
+                  style={{ backgroundColor: colorHex, color: iconContrastColor }}
+                >
+                  {SelectedIcon ? (
+                    <SelectedIcon className="title-icon__svg" aria-hidden="true" />
+                  ) : (
+                    <span className="title-icon__placeholder" aria-hidden="true">
+                      @
+                    </span>
+                  )}
+                </div>
+              </button>
+            </div>
             <input
               className="title-input"
               placeholder="Ответить на почту"
@@ -878,14 +960,23 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
           )}
         {/* Цвет */}
           <div className="section">
-            <div className="section-title">Какой цвет?</div>
+            <div className="section-head">
+              <div className="section-title">Какой цвет?</div>
+              <button
+                className="link"
+                type="button"
+                onClick={() => setIsColorPickerOpen(true)}
+              >
+                Подробнее…
+              </button>
+            </div>
             <div className="colors">
-              {COLORS.map((c) => (
+              {COLOR_PRESETS.map((c) => (
                 <button
                   key={c}
-                  className={`color ${color === c ? "color--active" : ""}`}
+                  className={`color ${colorHex === c ? "color--active" : ""}`}
                   style={{ "--c": c }}
-                  onClick={() => setColor(c)}
+                  onClick={() => setColorHex(c)}
                   type="button"
                   aria-label="цвет"
                 />
@@ -1225,6 +1316,18 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         onSearchChange={setTemplateSearch}
         loading={templateLoading}
         error={templateError}
+      />
+      <IconPicker
+        open={isIconPickerOpen}
+        onClose={() => setIsIconPickerOpen(false)}
+        value={iconKey}
+        onChange={setIconKey}
+      />
+      <ColorPickerSheet
+        open={isColorPickerOpen}
+        onClose={() => setIsColorPickerOpen(false)}
+        value={colorHex}
+        onChange={setColorHex}
       />
     </div>
   );
