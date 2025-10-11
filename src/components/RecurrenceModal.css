@@ -1,0 +1,291 @@
+.rec-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+  font-family: "Inter", "SF Pro Display", "Roboto", system-ui, sans-serif;
+}
+
+.rec-modal--open {
+  pointer-events: auto;
+}
+
+.rec-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.rec-modal--open .rec-modal__backdrop {
+  opacity: 1;
+}
+
+.rec-modal__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--tg-sheet-bg);
+  border-radius: 28px 28px 0 0;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 20px 16px;
+  transform: translateY(100%);
+  transition: transform 0.24s ease-out;
+  border: 1px solid var(--tg-outline-soft);
+  box-shadow: var(--elev-3);
+  color: var(--tg-fg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rec-modal--open .rec-modal__panel {
+  transform: translateY(0);
+}
+
+.rec-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rec-modal__title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.rec-modal__close {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--tg-outline-soft);
+  background: var(--tg-surface);
+  color: var(--tg-fg);
+  font-size: 24px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.rec-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rec-modal__section-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.rec-modal__preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.rec-modal__preset {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--tg-outline-soft);
+  background: var(--tg-surface);
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--tg-fg);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.rec-modal__preset:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--elev-1);
+}
+
+.rec-modal__preset--inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rec-modal__preset-label {
+  font-weight: 600;
+}
+
+.rec-modal__number,
+.rec-modal__select {
+  border-radius: 12px;
+  border: 1px solid var(--tg-outline-soft);
+  background: var(--tg-surface);
+  color: var(--tg-fg);
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.rec-modal__number {
+  width: 72px;
+}
+
+.rec-modal__apply {
+  background: var(--tg-accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.rec-modal__apply--ghost {
+  background: transparent;
+  color: var(--tg-accent);
+  border: 1px solid var(--tg-accent);
+}
+
+.rec-modal__collapse {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--tg-outline-soft);
+  background: var(--tg-surface);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.rec-modal__custom {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rec-modal__block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rec-modal__block-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.rec-modal__inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rec-modal__inline--wrap {
+  flex-wrap: wrap;
+}
+
+.rec-modal__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rec-modal__chip {
+  border: 1px solid var(--tg-outline-soft);
+  border-radius: 12px;
+  background: var(--tg-surface);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--tg-fg);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.rec-modal__chip--active {
+  background: rgba(94, 92, 230, 0.12);
+  border-color: var(--tg-accent);
+  color: var(--tg-accent);
+}
+
+.rec-modal__day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.rec-modal__hint {
+  color: var(--tg-muted);
+  font-size: 13px;
+}
+
+.rec-modal__radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.rec-modal__radio input {
+  accent-color: var(--tg-accent);
+}
+
+.rec-modal__end {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+.rec-modal__tagline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rec-modal__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(94, 92, 230, 0.12);
+  color: var(--tg-accent);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.rec-modal__tag button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.rec-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.rec-modal__btn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 24px;
+  background: var(--tg-accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.rec-modal__btn--ghost {
+  background: transparent;
+  color: var(--tg-accent);
+  border: 1px solid var(--tg-accent);
+}
+
+@media (max-width: 480px) {
+  .rec-modal__preset-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}

@@ -2,7 +2,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./AddTaskSheet.css";
 import WheelPicker from "./WheelPicker";
-import { createTask } from "../utils/api";
+import RecurrenceModal from "./RecurrenceModal";
+import { createTask, getTimezone } from "../utils/api";
+import {
+  DEFAULT_RECURRENCE,
+  WEEKDAYS,
+  buildRRuleString,
+  detectSimpleChip,
+  formatWithOffset,
+  generateOccurrences,
+  sanitizeRule,
+  summarizeRecurrence,
+} from "../utils/recurrence";
 
 const mm2 = (n) => String(n).padStart(2, "0");
 const hours = Array.from({ length: 24 }, (_, h) => ({ label: mm2(h), value: h }));
@@ -77,7 +88,9 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   const [duration, setDuration] = useState(15);                       // мин
 
   const [color, setColor] = useState(COLORS[0]);
-  const [repeat, setRepeat] = useState("once");
+  const [recurrenceRule, setRecurrenceRule] = useState(null);
+  const [isRecurrenceModalOpen, setIsRecurrenceModalOpen] = useState(false);
+  const [timezoneOffset, setTimezoneOffset] = useState(-new Date().getTimezoneOffset());
   const [notes, setNotes] = useState("");
   const [subtasks, setSubtasks] = useState([]);
   const [subtaskInput, setSubtaskInput] = useState("");
@@ -87,6 +100,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   const [isNotifyPickerOpen, setIsNotifyPickerOpen] = useState(false);
   // «без временного интервала» (есть только время начала)
   const [noEnd, setNoEnd] = useState(false);
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   // какое колесо пользователь «тапнул»: 'sh' | 'sm' | 'interval' | null
   const [pickedWheel, setPickedWheel] = useState(null);
   const openTimeSheet = (key) => { setPickedWheel(key); setIsTimePickerOpen(true); };
@@ -98,11 +112,25 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   });
   const [customNotify, setCustomNotify] = useState({ hours: 0, minutes: 15 });
 
+  useEffect(() => {
+    if (!open || !telegramId) return undefined;
+    const controller = new AbortController();
+    getTimezone(telegramId, controller.signal)
+      .then((data) => {
+        if (typeof data?.offset_min === "number") {
+          setTimezoneOffset(data.offset_min);
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [open, telegramId]);
+
   const startDate = useMemo(() => {
     const d = new Date(localDate);
-    d.setHours(sh, sm, 0, 0);
+    if (allDay) d.setHours(0, 0, 0, 0);
+    else d.setHours(sh, sm, 0, 0);
     return d;
-  }, [localDate, sh, sm]);
+  }, [localDate, sh, sm, allDay]);
 
   const startMinutes = useMemo(
     () => ((sh * 60 + sm) % MINUTES_IN_DAY + MINUTES_IN_DAY) % MINUTES_IN_DAY,
@@ -165,7 +193,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setDuration(15);
       setNotes("");
       setSubtasks([]);
-      setRepeat("once");
+      setRecurrenceRule(null);
       setColor(COLORS[0]);
       setIsTimePickerOpen(false);
       setIsDurPickerOpen(false);
@@ -175,6 +203,8 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setNoEnd(false);
       setNotifications({ start: true, end: false, beforeEnd15: false });
       setCustomNotify({ hours: 0, minutes: 15 });
+      setIsRecurrenceModalOpen(false);
+      setSaveAsTemplate(false);
     }
     // eslint-disable-next-line
   }, [open]);
@@ -213,22 +243,192 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     return active.join(" · ");
   };
 
+  const sanitizedRecurrence = useMemo(
+    () => (recurrenceRule ? sanitizeRule(recurrenceRule) : null),
+    [recurrenceRule]
+  );
+
+  const cloneRecurrence = (rule) => {
+    if (!rule) return null;
+    return {
+      ...rule,
+      byDay: [...rule.byDay],
+      byMonthDay: [...rule.byMonthDay],
+      exdates: [...rule.exdates],
+      rdates: rule.rdates.map((d) => (d instanceof Date ? new Date(d) : new Date(d))),
+    };
+  };
+
+  const applyRecurrencePreset = (updates) => {
+    setRecurrenceRule((prev) => {
+      const base = cloneRecurrence(sanitizeRule(prev || DEFAULT_RECURRENCE));
+      if (!base) return sanitizeRule({ ...DEFAULT_RECURRENCE, ...updates });
+      const next = { ...base, ...updates };
+      if (!("byDay" in updates)) next.byDay = base.byDay;
+      if (!("byMonthDay" in updates)) next.byMonthDay = base.byMonthDay;
+      if (!("exdates" in updates)) next.exdates = base.exdates;
+      if (!("rdates" in updates)) next.rdates = base.rdates;
+      if (!("bySetPos" in updates)) next.bySetPos = base.bySetPos;
+      if (!("until" in updates)) next.until = base.until;
+      if (!("count" in updates)) next.count = base.count;
+      if (!("skipPolicy" in updates)) next.skipPolicy = base.skipPolicy;
+      if (!("shiftN" in updates)) next.shiftN = base.shiftN;
+      return next;
+    });
+  };
+
+  const handleRepeatChip = (key) => {
+    if (key === "once") {
+      setRecurrenceRule(null);
+      return;
+    }
+    if (key === "daily") {
+      applyRecurrencePreset({
+        freq: "DAILY",
+        interval: 1,
+        byDay: [],
+        byMonthDay: [],
+        bySetPos: null,
+      });
+    }
+    if (key === "weekly") {
+      const startWeekday = WEEKDAYS[(startDate.getDay() + 6) % 7]?.value || "MO";
+      applyRecurrencePreset({
+        freq: "WEEKLY",
+        interval: 1,
+        byDay: [startWeekday],
+        byMonthDay: [],
+        bySetPos: null,
+      });
+    }
+    if (key === "monthly") {
+      applyRecurrencePreset({
+        freq: "MONTHLY",
+        interval: 1,
+        byDay: [],
+        byMonthDay: [startDate.getDate()],
+        bySetPos: null,
+      });
+    }
+  };
+
+  const repeatKey = useMemo(
+    () => (sanitizedRecurrence ? detectSimpleChip(sanitizedRecurrence, startDate) : "once"),
+    [sanitizedRecurrence, startDate]
+  );
+
+  useEffect(() => {
+    if (!sanitizedRecurrence) return;
+    const key = detectSimpleChip(sanitizedRecurrence, startDate);
+    if (key === "weekly") {
+      const expectedDay = WEEKDAYS[(startDate.getDay() + 6) % 7]?.value || "MO";
+      if (
+        sanitizedRecurrence.byDay.length !== 1 ||
+        sanitizedRecurrence.byDay[0] !== expectedDay
+      ) {
+        setRecurrenceRule((prev) => {
+          if (!prev) return prev;
+          const base = cloneRecurrence(sanitizeRule(prev));
+          return { ...base, byDay: [expectedDay], byMonthDay: [], bySetPos: null };
+        });
+      }
+    }
+    if (key === "monthly") {
+      const expectedDate = startDate.getDate();
+      if (
+        sanitizedRecurrence.byMonthDay.length !== 1 ||
+        sanitizedRecurrence.byMonthDay[0] !== expectedDate
+      ) {
+        setRecurrenceRule((prev) => {
+          if (!prev) return prev;
+          const base = cloneRecurrence(sanitizeRule(prev));
+          return { ...base, byMonthDay: [expectedDate], byDay: [], bySetPos: null };
+        });
+      }
+    }
+  }, [sanitizedRecurrence, startDate]);
+
+  const recurrenceSummary = useMemo(
+    () =>
+      sanitizedRecurrence
+        ? summarizeRecurrence({
+            rule: sanitizedRecurrence,
+            startDate,
+            allDay,
+            offsetMin: timezoneOffset,
+          })
+        : null,
+    [sanitizedRecurrence, startDate, allDay, timezoneOffset]
+  );
+
+  const recurrencePreviewDates = useMemo(
+    () =>
+      sanitizedRecurrence
+        ? generateOccurrences({
+            rule: sanitizedRecurrence,
+            startDate,
+            offsetMin: timezoneOffset,
+            count: 6,
+          })
+        : [],
+    [sanitizedRecurrence, startDate, timezoneOffset]
+  );
+
+  const formatOccurrence = (date) => {
+    const opts = {
+      day: "2-digit",
+      month: "short",
+    };
+    if (!allDay) {
+      opts.hour = "2-digit";
+      opts.minute = "2-digit";
+    }
+    return date.toLocaleString("ru-RU", opts);
+  };
+
   const handleSubmit = async () => {
     if (!telegramId) return;
     if (!title.trim()) { alert("Введите название задачи"); return; }
-    const dateISO = (d) => (d ? new Date(d).toISOString() : null);
+    const startString = formatWithOffset(startDate, timezoneOffset);
+    if (!startString) {
+      alert("Не удалось определить дату начала");
+      return;
+    }
+    const endString = !allDay && !noEnd && endDate ? formatWithOffset(endDate, timezoneOffset) : null;
 
     const payload = {
       telegram_id: telegramId,
       title: title.trim(),
       description: notes || null,
-      start_dt: allDay
-        ? new Date(new Date(localDate).setHours(0, 0, 0, 0)).toISOString()
-        : dateISO(startDate),
-      end_dt: (allDay || noEnd) ? null : dateISO(endDate),
+      start_dt: startString,
+      end_dt: endString,
       all_day: allDay,
-      for_user: null,
     };
+
+    if (sanitizedRecurrence) {
+      const rrule = buildRRuleString(sanitizedRecurrence, timezoneOffset);
+      if (!rrule) {
+        alert("Не удалось сформировать правило повторения");
+        return;
+      }
+      const recur = {
+        rrule,
+        skip_policy: sanitizedRecurrence.skipPolicy || "skip",
+      };
+      if (sanitizedRecurrence.until) {
+        recur.until = formatWithOffset(sanitizedRecurrence.until, timezoneOffset);
+      }
+      if (sanitizedRecurrence.exdates.length) {
+        recur.exdates = sanitizedRecurrence.exdates;
+      }
+      if (sanitizedRecurrence.rdates.length) {
+        recur.rdates = sanitizedRecurrence.rdates.map((d) => formatWithOffset(d, timezoneOffset));
+      }
+      if (sanitizedRecurrence.skipPolicy === "shift_n" && sanitizedRecurrence.shiftN) {
+        recur.shift_n = sanitizedRecurrence.shiftN;
+      }
+      payload.recur = recur;
+    }
 
     try { await createTask(payload); onClose(); }
     catch (e) { alert(`Ошибка сохранения: ${e.message}`); }
@@ -405,7 +605,12 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
 
           {/* Повтор */}
           <div className="section">
-            <div className="section-title">Как часто?</div>
+            <div className="section-head">
+              <div className="section-title">Как часто?</div>
+              <button className="link" type="button" onClick={() => setIsRecurrenceModalOpen(true)}>
+                Подробнее…
+              </button>
+            </div>
             <div className="chips">
               {[
                 { k: "once", label: "Один раз" },
@@ -415,15 +620,40 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
               ].map((o) => (
                 <button
                   key={o.k}
-                  className={`chip ${repeat === o.k ? "chip--active" : ""}`}
-                  onClick={() => setRepeat(o.k)}
+                  className={`chip ${repeatKey === o.k ? "chip--active" : ""}`}
+                  onClick={() => handleRepeatChip(o.k)}
                   type="button"
                 >
                   {o.label}
                 </button>
               ))}
             </div>
+            {recurrenceSummary && (
+              <div className="recurrence-preview">
+                <div className="recurrence-preview__summary">{recurrenceSummary}</div>
+                {recurrencePreviewDates.length > 0 && (
+                  <div className="recurrence-preview__upcoming">
+                    <div className="recurrence-preview__label">Ближайшие повторения:</div>
+                    <div className="recurrence-preview__list">
+                      {recurrencePreviewDates.map((date, idx) => (
+                        <span key={`${date.getTime()}-${idx}`} className="recurrence-preview__item">
+                          {formatOccurrence(date)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+          <button
+            className="row toggler"
+            onClick={() => setSaveAsTemplate((v) => !v)}
+            type="button"
+          >
+            <div className={`check ${saveAsTemplate ? "check--on" : ""}`} />
+            <div className="row-title">Сохранить как шаблон / по умолчанию</div>
+          </button>
           {/* Оповещения */}
           <div className="section">
             <div className="section-head">
@@ -639,6 +869,14 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         </div>
         <button className="inner-close" type="button" onClick={() => setIsNotifyPickerOpen(false)}>Готово</button>
       </div>
+
+      <RecurrenceModal
+        open={isRecurrenceModalOpen}
+        onClose={() => setIsRecurrenceModalOpen(false)}
+        onApply={(rule) => setRecurrenceRule(cloneRecurrence(rule))}
+        startDate={startDate}
+        initialRule={cloneRecurrence(sanitizedRecurrence || sanitizeRule(DEFAULT_RECURRENCE))}
+      />
     </div>
   );
 }

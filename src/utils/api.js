@@ -5,6 +5,14 @@ export const API_BASE =
   (PLACEHOLDER_BASE.startsWith('http') ? PLACEHOLDER_BASE : 'https://api.freakdev.site');
 export const api = (path) => `${API_BASE}${path}`;
 
+export async function getTimezone(telegramId, signal) {
+  const res = await fetch(api(`/timezone?uid=${telegramId}`), { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (typeof data?.offset_min !== 'number') throw new Error(data?.error || 'Bad timezone response');
+  return data;
+}
+
 export async function getTasksForDate(telegramId, date, signal) {
   const url = api(`/tasks?uid=${telegramId}&date=${date}`);
   const res = await fetch(url, { signal });
