@@ -4,7 +4,7 @@ import "./AddTaskSheet.css";
 import WheelPicker from "./WheelPicker";
 import RecurrenceModal from "./RecurrenceModal";
 import RepeatTemplateManager from "./RepeatTemplateManager";
-import IconPicker from "./IconPicker";
+import IconPickerSheet from "./IconPickerSheet";
 import ColorPickerSheet from "./ColorPickerSheet";
 import {
   createTask,
@@ -28,7 +28,7 @@ import {
   ruleFromPayload,
   toUtcDate,
 } from "../utils/recurrence";
-import { loadIcons } from "../utils/loadIcons";
+import { getIconMeta, iconExists } from "../utils/iconRegistry";
 
 const mm2 = (n) => String(n).padStart(2, "0");
 const hours = Array.from({ length: 24 }, (_, h) => ({ label: mm2(h), value: h }));
@@ -132,7 +132,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   const [duration, setDuration] = useState(15);                       // мин
 
   const [iconKey, setIconKey] = useState(null);
-  const [colorHex, setColorHex] = useState(DEFAULT_COLOR);
+  const [colorHex, setColorHex] = useState(null);
   const [recurrenceRule, setRecurrenceRule] = useState(null);
   const [isRecurrenceModalOpen, setIsRecurrenceModalOpen] = useState(false);
   const [timezoneOffset, setTimezoneOffset] = useState(-new Date().getTimezoneOffset());
@@ -165,17 +165,10 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
   });
   const [customNotify, setCustomNotify] = useState({ hours: 0, minutes: 15 });
 
-  const loadedIcons = useMemo(() => loadIcons(), []);
-  const iconComponentMap = useMemo(() => {
-    const map = new Map();
-    loadedIcons.forEach((entry) => {
-      map.set(entry.key, entry.Component);
-    });
-    return map;
-  }, [loadedIcons]);
-  const iconKeysSet = useMemo(() => new Set(loadedIcons.map((entry) => entry.key)), [loadedIcons]);
-  const SelectedIcon = iconKey ? iconComponentMap.get(iconKey) : null;
-  const iconContrastColor = useMemo(() => contrastForHex(colorHex), [colorHex]);
+  const previewColor = colorHex || DEFAULT_COLOR;
+  const iconMeta = getIconMeta(iconKey);
+  const SelectedIcon = iconMeta ? iconMeta.Component : null;
+  const iconContrastColor = contrastForHex(previewColor);
 
   useEffect(() => {
     if (!open || !telegramId) return undefined;
@@ -287,7 +280,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       setSubtasks([]);
       setRecurrenceRule(null);
       setIconKey(null);
-      setColorHex(DEFAULT_COLOR);
+      setColorHex(null);
       setIsTimePickerOpen(false);
       setIsDurPickerOpen(false);
       setIsNotifyPickerOpen(false);
@@ -698,16 +691,16 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
       all_day: allDay,
     };
 
-    const normalizedColor = normalizeHex(colorHex);
-    if (!normalizedColor) {
+    const normalizedColor = colorHex ? normalizeHex(colorHex) : null;
+    if (colorHex && !normalizedColor) {
       alert("Укажите корректный HEX цвет");
       return;
     }
-    if (iconKey && !iconKeysSet.has(iconKey)) {
+    if (iconKey && !iconExists(iconKey)) {
       alert("Выбранная иконка недоступна");
       return;
     }
-    payload.icon_key = iconKey;
+    payload.icon_key = iconKey || null;
     payload.color_hex = normalizedColor;
 
     let templatePayload = null;
@@ -838,7 +831,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
               >
                 <div
                   className="title-icon__preview"
-                  style={{ backgroundColor: colorHex, color: iconContrastColor }}
+                  style={{ backgroundColor: previewColor, color: iconContrastColor }}
                 >
                   {SelectedIcon ? (
                     <SelectedIcon className="title-icon__svg" aria-hidden="true" />
@@ -976,7 +969,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
                   key={c}
                   className={`color ${colorHex === c ? "color--active" : ""}`}
                   style={{ "--c": c }}
-                  onClick={() => setColorHex(c)}
+                  onClick={() => setColorHex((prev) => (prev === c ? null : c))}
                   type="button"
                   aria-label="цвет"
                 />
@@ -1317,7 +1310,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         loading={templateLoading}
         error={templateError}
       />
-      <IconPicker
+      <IconPickerSheet
         open={isIconPickerOpen}
         onClose={() => setIsIconPickerOpen(false)}
         value={iconKey}

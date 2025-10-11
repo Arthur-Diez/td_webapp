@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./BottomSheet.css";
 
@@ -7,13 +7,29 @@ type BottomSheetProps = {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
+  className?: string;
 };
 
-const BottomSheet: React.FC<BottomSheetProps> = ({ open, onClose, title, children }) => {
+const BottomSheet: React.FC<BottomSheetProps> = ({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  className = "",
+}) => {
   const overlayRef = useRef<HTMLDivElement | null>(null);
-  const sheetRef = useRef<HTMLDivElement | null>(null);
-  const startYRef = useRef<number | null>(null);
-  const currentYRef = useRef<number>(0);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const handleRef = useRef<HTMLButtonElement | null>(null);
+  const animationFrame = useRef<number | null>(null);
+  const dragStartYRef = useRef<number | null>(null);
+  const dragDeltaRef = useRef<number>(0);
+
+  const portalTarget = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    return document.body;
+  }, []);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -28,64 +44,94 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ open, onClose, title, childre
   }, [open, onClose]);
 
   useEffect(() => {
+    if (!portalTarget) return;
     if (open) {
-      document.body.classList.add("bottom-sheet--locked");
+      portalTarget.classList.add("bottom-sheet--locked");
     } else {
-      document.body.classList.remove("bottom-sheet--locked");
+      portalTarget.classList.remove("bottom-sheet--locked");
     }
-    return () => {
-      document.body.classList.remove("bottom-sheet--locked");
-    };
+    return () => portalTarget.classList.remove("bottom-sheet--locked");
+  }, [open, portalTarget]);
+
+  useEffect(() => {
+    if (!open || !panelRef.current) return;
+    const node = panelRef.current;
+    node.focus({ preventScroll: true });
   }, [open]);
 
   useEffect(() => {
-    if (!open || !sheetRef.current) return undefined;
-    const node = sheetRef.current;
+    if (!open) return undefined;
+    const handle = handleRef.current;
+    const panel = panelRef.current;
+    if (!handle || !panel) return undefined;
 
-    const handlePointerDown = (event: PointerEvent) => {
-      startYRef.current = event.clientY;
-      currentYRef.current = 0;
-      node.setPointerCapture(event.pointerId);
+    const onPointerMove = (event: PointerEvent) => {
+      if (dragStartYRef.current === null) return;
+      const delta = Math.max(0, event.clientY - dragStartYRef.current);
+      dragDeltaRef.current = delta;
+      if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+      animationFrame.current = requestAnimationFrame(() => {
+        panel.style.transform = `translateY(${delta}px)`;
+        panel.style.opacity = delta > 10 ? String(Math.max(0.2, 1 - delta / 400)) : "1";
+      });
     };
 
-    const handlePointerMove = (event: PointerEvent) => {
-      if (startYRef.current === null) return;
-      currentYRef.current = Math.max(0, event.clientY - startYRef.current);
-      node.style.transform = `translateY(${currentYRef.current}px)`;
+    const resetTransform = () => {
+      panel.style.transform = "";
+      panel.style.opacity = "";
     };
 
-    const handlePointerUp = (event: PointerEvent) => {
-      node.releasePointerCapture(event.pointerId);
-      if (startYRef.current === null) return;
-      if (currentYRef.current > 120) {
+    const onPointerUp = () => {
+      if (dragStartYRef.current === null) return;
+      const delta = dragDeltaRef.current;
+      dragStartYRef.current = null;
+      dragDeltaRef.current = 0;
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+      if (delta > 140) {
         onClose();
+      } else {
+        resetTransform();
       }
-      node.style.transform = "";
-      startYRef.current = null;
-      currentYRef.current = 0;
     };
 
-    const handlePointerCancel = (event: PointerEvent) => {
-      node.releasePointerCapture(event.pointerId);
-      node.style.transform = "";
-      startYRef.current = null;
-      currentYRef.current = 0;
+    const onPointerCancel = () => {
+      dragStartYRef.current = null;
+      dragDeltaRef.current = 0;
+      resetTransform();
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
     };
 
-    node.addEventListener("pointerdown", handlePointerDown);
-    node.addEventListener("pointermove", handlePointerMove);
-    node.addEventListener("pointerup", handlePointerUp);
-    node.addEventListener("pointercancel", handlePointerCancel);
+    const onPointerDown = (event: PointerEvent) => {
+      dragStartYRef.current = event.clientY;
+      dragDeltaRef.current = 0;
+      window.addEventListener("pointermove", onPointerMove, { passive: true });
+      window.addEventListener("pointerup", onPointerUp, { passive: true });
+      window.addEventListener("pointercancel", onPointerCancel, { passive: true });
+    };
+
+    handle.addEventListener("pointerdown", onPointerDown);
 
     return () => {
-      node.removeEventListener("pointerdown", handlePointerDown);
-      node.removeEventListener("pointermove", handlePointerMove);
-      node.removeEventListener("pointerup", handlePointerUp);
-      node.removeEventListener("pointercancel", handlePointerCancel);
+      handle.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  useEffect(() => {
+    return () => {
+      if (animationFrame.current) {
+        cancelAnimationFrame(animationFrame.current);
+      }
+    };
+  }, []);
+
+  if (!open || !portalTarget) return null;
 
   return ReactDOM.createPortal(
     <div className="bottom-sheet" role="presentation">
@@ -95,13 +141,36 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ open, onClose, title, childre
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="bottom-sheet__panel" ref={sheetRef} role="dialog" aria-modal="true">
-        <div className="bottom-sheet__handle" aria-hidden="true" />
+      <div
+        className={`bottom-sheet__panel ${className}`}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        tabIndex={-1}
+      >
+        <button
+          ref={handleRef}
+          type="button"
+          className="bottom-sheet__handle"
+          aria-label="Потяните, чтобы закрыть"
+        >
+          <span aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="bottom-sheet__close"
+          onClick={onClose}
+          aria-label="Закрыть"
+        >
+          <span aria-hidden="true">⌄</span>
+        </button>
         {title && <div className="bottom-sheet__title">{title}</div>}
-        <div className="bottom-sheet__content">{children}</div>
+        <div className="bottom-sheet__body">{children}</div>
+        {footer && <div className="bottom-sheet__footer">{footer}</div>}
       </div>
     </div>,
-    document.body
+    portalTarget
   );
 };
 
