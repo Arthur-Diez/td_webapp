@@ -11,7 +11,7 @@ import {
   createRepeatTemplate,
   updateRepeatTemplate,
   deleteRepeatTemplate,
-  useRepeatTemplate,
+  notifyTemplateUsed,
 } from "../utils/api";
 import {
   DEFAULT_RECURRENCE,
@@ -466,7 +466,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
     setRecurrenceRule(nextRule);
     setRepeatTemplateId(template.id);
     if (telegramId && template.id) {
-      useRepeatTemplate(template.id, telegramId).catch(() => {});
+      notifyTemplateUsed(template.id, telegramId).catch(() => {});
     }
   };
 

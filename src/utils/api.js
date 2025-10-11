@@ -69,7 +69,7 @@ export async function deleteRepeatTemplate(id) {
   return res.json();
 }
 
-export async function useRepeatTemplate(id, telegramId) {
+export async function notifyTemplateUsed(id, telegramId) {
   const res = await fetch(api(`/repeat-templates/${id}/use?uid=${telegramId}`), {
     method: 'POST',
   });
