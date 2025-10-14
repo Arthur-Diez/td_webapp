@@ -1,4 +1,5 @@
 .color-sheet {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -30,6 +31,7 @@
 }
 
 .color-sheet__canvas-wrapper {
+  box-sizing: border-box;
   position: relative;
   border-radius: 20px;
   overflow: hidden;
@@ -37,6 +39,7 @@
 }
 
 .color-sheet__canvas {
+  box-sizing: border-box;
   display: block;
   width: 100%;
   max-width: 420px;
@@ -60,9 +63,14 @@
   display: flex;
   gap: 16px;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .color-sheet__preview-swatch {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 320px;
   min-width: 120px;
   border-radius: 18px;
   padding: 18px 16px;
@@ -73,6 +81,7 @@
 }
 
 .color-sheet__field {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -87,6 +96,8 @@
 }
 
 .color-sheet__input {
+  box-sizing: border-box;
+  width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid var(--tg-outline-soft, rgba(255, 255, 255, 0.1));
@@ -131,6 +142,9 @@
     align-items: stretch;
   }
   .color-sheet__preview-swatch {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 320px;
     width: 100%;
   }
 }

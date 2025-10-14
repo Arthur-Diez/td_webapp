@@ -23,6 +23,7 @@
 }
 
 .rec-modal__panel {
+  box-sizing: border-box;
   position: absolute;
   left: 0;
   right: 0;
@@ -30,6 +31,7 @@
   background: var(--tg-sheet-bg);
   border-radius: 28px 28px 0 0;
   max-height: 92vh;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -44,6 +46,7 @@
 }
 
 .rec-modal--open .rec-modal__panel {
+  box-sizing: border-box;
   transform: translateY(0);
 }
 

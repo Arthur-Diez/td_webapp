@@ -21,7 +21,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 }) => {
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const handleRef = useRef<HTMLButtonElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const animationFrame = useRef<number | null>(null);
   const dragStartYRef = useRef<number | null>(null);
   const dragDeltaRef = useRef<number>(0);
@@ -61,9 +61,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 
   useEffect(() => {
     if (!open) return undefined;
-    const handle = handleRef.current;
+    const dragZone = closeButtonRef.current;
     const panel = panelRef.current;
-    if (!handle || !panel) return undefined;
+    if (!dragZone || !panel) return undefined;
 
     const onPointerMove = (event: PointerEvent) => {
       if (dragStartYRef.current === null) return;
@@ -72,7 +72,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
       animationFrame.current = requestAnimationFrame(() => {
         panel.style.transform = `translateY(${delta}px)`;
-        panel.style.opacity = delta > 10 ? String(Math.max(0.2, 1 - delta / 400)) : "1";
+        panel.style.opacity = delta > 10 ? String(Math.max(0.2, 1 - delta / 360)) : "1";
       });
     };
 
@@ -81,14 +81,14 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       panel.style.opacity = "";
     };
 
-    const onPointerUp = () => {
+    const finishGesture = () => {
       if (dragStartYRef.current === null) return;
       const delta = dragDeltaRef.current;
       dragStartYRef.current = null;
       dragDeltaRef.current = 0;
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("pointerup", finishGesture);
+      window.removeEventListener("pointercancel", cancelGesture);
       if (delta > 140) {
         onClose();
       } else {
@@ -96,30 +96,30 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       }
     };
 
-    const onPointerCancel = () => {
+    const cancelGesture = () => {
       dragStartYRef.current = null;
       dragDeltaRef.current = 0;
       resetTransform();
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("pointerup", finishGesture);
+      window.removeEventListener("pointercancel", cancelGesture);
     };
 
     const onPointerDown = (event: PointerEvent) => {
       dragStartYRef.current = event.clientY;
       dragDeltaRef.current = 0;
       window.addEventListener("pointermove", onPointerMove, { passive: true });
-      window.addEventListener("pointerup", onPointerUp, { passive: true });
-      window.addEventListener("pointercancel", onPointerCancel, { passive: true });
+      window.addEventListener("pointerup", finishGesture, { passive: true });
+      window.addEventListener("pointercancel", cancelGesture, { passive: true });
     };
 
-    handle.addEventListener("pointerdown", onPointerDown);
+    dragZone.addEventListener("pointerdown", onPointerDown);
 
     return () => {
-      handle.removeEventListener("pointerdown", onPointerDown);
+      dragZone.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("pointerup", finishGesture);
+      window.removeEventListener("pointercancel", cancelGesture);
     };
   }, [open, onClose]);
 
@@ -149,23 +149,18 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         aria-label={title}
         tabIndex={-1}
       >
-        <button
-          ref={handleRef}
-          type="button"
-          className="bottom-sheet__handle"
-          aria-label="Потяните, чтобы закрыть"
-        >
-          <span aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="bottom-sheet__close"
-          onClick={onClose}
-          aria-label="Закрыть"
-        >
-          <span aria-hidden="true">⌄</span>
-        </button>
-        {title && <div className="bottom-sheet__title">{title}</div>}
+        <div className="bottom-sheet__header">
+          <button
+            ref={closeButtonRef}
+            type="button"
+            className="bottom-sheet__dismiss"
+            onClick={onClose}
+            aria-label="Закрыть"
+          >
+            <span aria-hidden="true">⌄</span>
+          </button>
+          {title && <div className="bottom-sheet__title">{title}</div>}
+        </div>
         <div className="bottom-sheet__body">{children}</div>
         {footer && <div className="bottom-sheet__footer">{footer}</div>}
       </div>
