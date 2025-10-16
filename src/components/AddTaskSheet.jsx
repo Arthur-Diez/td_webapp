@@ -1315,6 +1315,7 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         onClose={() => setIsIconPickerOpen(false)}
         value={iconKey}
         onChange={setIconKey}
+        pickedColor={colorHex}
       />
       <ColorPickerSheet
         open={isColorPickerOpen}

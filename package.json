@@ -18,7 +18,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "gen:icons": "node scripts/gen-icons.mjs",
+    "prestart": "npm run gen:icons",
+    "prebuild": "npm run gen:icons"
   },
   "eslintConfig": {
     "extends": [

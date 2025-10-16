@@ -4,8 +4,8 @@ import "./IconPicker.css";
 import {
   GROUP_LABELS,
   GROUP_ORDER,
-  IconGroupId,
-  IconMeta,
+  type IconGroupId,
+  type IconMeta,
   getIconMeta,
   getIconsForGroup,
 } from "../utils/iconRegistry";
@@ -15,11 +15,18 @@ type IconPickerProps = {
   onClose: () => void;
   value?: string | null;
   onChange: (iconKey: string) => void;
+  pickedColor?: string;
 };
 
 const FALLBACK_GROUP: IconGroupId = GROUP_ORDER[0];
 
-const IconPicker: React.FC<IconPickerProps> = ({ isOpen, onClose, value, onChange }) => {
+const IconPicker: React.FC<IconPickerProps> = ({
+  isOpen,
+  onClose,
+  value,
+  onChange,
+  pickedColor,
+}) => {
   const initialGroup = useMemo<IconGroupId>(() => {
     const meta = getIconMeta(value);
     return meta?.group ?? FALLBACK_GROUP;
@@ -34,12 +41,14 @@ const IconPicker: React.FC<IconPickerProps> = ({ isOpen, onClose, value, onChang
     setActiveGroup(initialGroup);
   }, [isOpen, initialGroup]);
 
-  const icons = useMemo<IconMeta[]>(() => getIconsForGroup(activeGroup), [activeGroup]);
+  const iconMetas = useMemo<IconMeta[]>(() => getIconsForGroup(activeGroup), [activeGroup]);
 
   const handleSelect = (iconKey: string) => {
     onChange(iconKey);
     onClose();
   };
+
+  const iconColor = pickedColor ?? "currentColor";
 
   return (
     <BottomSheet open={isOpen} onClose={onClose} title="Выберите иконку">
@@ -60,22 +69,21 @@ const IconPicker: React.FC<IconPickerProps> = ({ isOpen, onClose, value, onChang
           })}
         </nav>
         <div className="icon-picker__grid" role="list">
-          {icons.length === 0 ? (
+          {iconMetas.length === 0 ? (
             <div className="icon-picker__empty">Нет иконок в этой категории</div>
           ) : (
-            icons.map((icon) => {
-              const IconComponent = icon.Component;
-              const selected = value === icon.key;
+            iconMetas.map((meta) => {
+              const selected = value === meta.key;
               return (
                 <button
-                  key={icon.key}
+                  key={meta.key}
                   type="button"
                   className={`icon-picker__item ${selected ? "icon-picker__item--active" : ""}`}
-                  onClick={() => handleSelect(icon.key)}
+                  onClick={() => handleSelect(meta.key)}
                   aria-pressed={selected}
-                  aria-label={icon.name}
+                  aria-label={meta.name}
                 >
-                  <IconComponent className="icon-picker__svg" />
+                  <meta.Component width={24} height={24} style={{ color: iconColor }} />
                 </button>
               );
             })
