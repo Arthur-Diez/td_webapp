@@ -32,42 +32,43 @@ export const GROUP_LABELS: Record<IconGroupId, string> = {
   other: "Другое",
 };
 
-const hasImportGlob =
-  typeof import.meta !== "undefined" && typeof (import.meta as any).glob === "function";
+let importMetaGlob: ((pattern: string, options: { eager: boolean }) => ModuleMap) | null = null;
+try {
+  // Используем Function, чтобы избежать синтаксической ошибки в средах без поддержки import.meta
+  // (например, Jest). В браузере код выполнится и вернёт корректное значение.
+  // eslint-disable-next-line no-new-func
+  importMetaGlob = Function(
+    "return typeof import.meta !== 'undefined' && typeof import.meta.glob === 'function' ? import.meta.glob : null;"
+  )();
+} catch (error) {
+  importMetaGlob = null;
+}
+const hasImportGlob = typeof importMetaGlob === "function";
+
+// В окружениях вроде CRA глобального require может не быть, однако Webpack подставляет
+// собственную реализацию. Проверяем наличие безопасно через typeof, а затем используем
+// саму функцию, чтобы избежать обращения к undefined.
+const requireFn: typeof require | null =
+  typeof require !== "undefined" && typeof (require as any) === "function"
+    ? (require as typeof require)
+    : null;
 const hasRequireContext =
-  typeof require === "function" && typeof (require as any)?.context === "function";
+  Boolean(requireFn) && typeof (requireFn as any).context === "function";
 
 let modules: ModuleMap = {};
 
-if (hasImportGlob) {
-  modules = (import.meta as any).glob("../assets/icons/**/*.svg", { eager: true }) as ModuleMap;
-} else if (hasRequireContext) {
+if (hasImportGlob && importMetaGlob) {
+  modules = importMetaGlob("../assets/icons/**/*.svg", { eager: true }) as ModuleMap;
+} else if (hasRequireContext && requireFn) {
   try {
-    // Явно приводим только если у require действительно есть .context
-    type ReqWithContext = {
-      context: (path: string, deep?: boolean, filter?: RegExp) => {
-        keys(): string[];
-        <T>(id: string): T;
-      };
-    };
+    const context = (requireFn as any).context("../assets/icons", true, /\.svg$/);
+    const keys: string[] = context.keys();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const r: ReqWithContext | null =
-      typeof require !== "undefined" && (require as any)?.context
-        ? (require as unknown as ReqWithContext)
-        : null;
-
-    if (r) {
-      const context = r.context("../assets/icons", true, /\.svg$/);
-      const keys: string[] = context.keys();
-
-      modules = keys.reduce<ModuleMap>((acc, key) => {
-        acc[key] = context<IconModule>(key);
-        return acc;
-      }, {});
-    } else {
-      modules = {};
-    }
+    modules = keys.reduce<ModuleMap>((acc, key) => {
+      const iconModule = context(key) as IconModule;
+      acc[key] = iconModule;
+      return acc;
+    }, {});
   } catch (error) {
     console.error("Icon registry: failed to load via require.context", error);
     modules = {};
