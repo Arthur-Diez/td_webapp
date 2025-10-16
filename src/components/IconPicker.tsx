@@ -2,59 +2,62 @@ import React, { useEffect, useMemo, useState } from "react";
 import BottomSheet from "./BottomSheet";
 import "./IconPicker.css";
 import {
-  GROUP_ORDER,
   GROUP_LABELS,
+  GROUP_ORDER,
   IconGroupId,
   IconMeta,
-  ICONS_BY_GROUP_ORDERED,
   getIconMeta,
+  getIconsForGroup,
 } from "../utils/iconRegistry";
 
-type IconPickerSheetProps = {
-  open: boolean;
+type IconPickerProps = {
+  isOpen: boolean;
   onClose: () => void;
-  value: string | null;
-  onChange: (key: string) => void;
+  value?: string | null;
+  onChange: (iconKey: string) => void;
 };
 
 const FALLBACK_GROUP: IconGroupId = GROUP_ORDER[0];
 
-const IconPickerSheet: React.FC<IconPickerSheetProps> = ({ open, onClose, value, onChange }) => {
-  const initialGroup = useMemo(() => {
+const IconPicker: React.FC<IconPickerProps> = ({ isOpen, onClose, value, onChange }) => {
+  const initialGroup = useMemo<IconGroupId>(() => {
     const meta = getIconMeta(value);
-    return (meta?.group as IconGroupId) || FALLBACK_GROUP;
+    return meta?.group ?? FALLBACK_GROUP;
   }, [value]);
 
   const [activeGroup, setActiveGroup] = useState<IconGroupId>(initialGroup);
 
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) {
+      return;
+    }
     setActiveGroup(initialGroup);
-  }, [open, initialGroup]);
+  }, [isOpen, initialGroup]);
 
-  const icons: IconMeta[] = useMemo(() => {
-    return ICONS_BY_GROUP_ORDERED[activeGroup] || [];
-  }, [activeGroup]);
+  const icons = useMemo<IconMeta[]>(() => getIconsForGroup(activeGroup), [activeGroup]);
 
-  const handleIconSelect = (key: string) => {
-    onChange(key);
+  const handleSelect = (iconKey: string) => {
+    onChange(iconKey);
     onClose();
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Выберите иконку">
+    <BottomSheet open={isOpen} onClose={onClose} title="Выберите иконку">
       <div className="icon-picker">
         <nav className="icon-picker__groups" aria-label="Группы иконок">
-          {GROUP_ORDER.map((groupId) => (
-            <button
-              key={groupId}
-              type="button"
-              className={`icon-picker__group ${activeGroup === groupId ? "icon-picker__group--active" : ""}`}
-              onClick={() => setActiveGroup(groupId)}
-            >
-              {GROUP_LABELS[groupId]}
-            </button>
-          ))}
+          {GROUP_ORDER.map((groupId) => {
+            const isActive = activeGroup === groupId;
+            return (
+              <button
+                key={groupId}
+                type="button"
+                className={`icon-picker__group ${isActive ? "icon-picker__group--active" : ""}`}
+                onClick={() => setActiveGroup(groupId)}
+              >
+                {GROUP_LABELS[groupId]}
+              </button>
+            );
+          })}
         </nav>
         <div className="icon-picker__grid" role="list">
           {icons.length === 0 ? (
@@ -68,7 +71,7 @@ const IconPickerSheet: React.FC<IconPickerSheetProps> = ({ open, onClose, value,
                   key={icon.key}
                   type="button"
                   className={`icon-picker__item ${selected ? "icon-picker__item--active" : ""}`}
-                  onClick={() => handleIconSelect(icon.key)}
+                  onClick={() => handleSelect(icon.key)}
                   aria-pressed={selected}
                   aria-label={icon.name}
                 >
@@ -83,4 +86,4 @@ const IconPickerSheet: React.FC<IconPickerSheetProps> = ({ open, onClose, value,
   );
 };
 
-export default IconPickerSheet;
+export default IconPicker;

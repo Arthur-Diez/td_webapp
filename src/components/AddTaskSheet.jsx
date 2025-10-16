@@ -4,7 +4,7 @@ import "./AddTaskSheet.css";
 import WheelPicker from "./WheelPicker";
 import RecurrenceModal from "./RecurrenceModal";
 import RepeatTemplateManager from "./RepeatTemplateManager";
-import IconPickerSheet from "./IconPickerSheet";
+import IconPicker from "./IconPicker";
 import ColorPickerSheet from "./ColorPickerSheet";
 import {
   createTask,
@@ -1310,8 +1310,8 @@ export default function AddTaskSheet({ open, onClose, telegramId, selectedDate }
         loading={templateLoading}
         error={templateError}
       />
-      <IconPickerSheet
-        open={isIconPickerOpen}
+      <IconPicker
+        isOpen={isIconPickerOpen}
         onClose={() => setIsIconPickerOpen(false)}
         value={iconKey}
         onChange={setIconKey}
