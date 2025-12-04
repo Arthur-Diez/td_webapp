@@ -20,13 +20,6 @@ const isOverdue = (task) => {
   return end < new Date() && task.status === "pending";
 };
 
-const resolveAccent = (task, overdue) => {
-  if (task.color_hex) return task.color_hex;
-  if (task.icon_color) return task.icon_color;
-  if (overdue) return "#FF4D4D";
-  return "#00F0FF";
-};
-
 const GAP_MIN = 15; // порог «свободного окна»
 
 export default function DayTimeline({ dateISO, tasks }) {
@@ -123,16 +116,8 @@ export default function DayTimeline({ dateISO, tasks }) {
               </div>
 
               <div className="nm-task-meta">
-                <span
-                  className="nm-task-avatar"
-                  style={{ "--task-accent": resolveAccent(r.t, isOverdue(r.t)) }}
-                >
+                <span className="nm-task-avatar">
                   {r.t.icon || "•"}
-                </span>
-                <span className="nm-task-check" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" role="presentation">
-                    <path d="m6 12 4 4 8-8" />
-                  </svg>
                 </span>
               </div>
             </li>
@@ -164,12 +149,7 @@ export default function DayTimeline({ dateISO, tasks }) {
                   {t.from_name && <div className="nm-task-subline">от {t.from_name}</div>}
                 </div>
                 <div className="nm-task-meta">
-                  <span
-                    className="nm-task-avatar"
-                    style={{ "--task-accent": resolveAccent(t, false) }}
-                  >
-                    {t.icon || "•"}
-                  </span>
+                  <span className="nm-task-avatar">{t.icon || "•"}</span>
                 </div>
               </li>
             ))}

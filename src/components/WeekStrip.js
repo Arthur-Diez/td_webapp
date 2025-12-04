@@ -17,14 +17,10 @@ export default function WeekStrip({ date, onDateSelect }) {
     return d;
   });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   return (
     <div className="week-strip">
       {days.map((d, index) => {
         const isSelected = d.toDateString() === date.toDateString();
-        const isToday = d.toDateString() === today.toDateString();
         const weekDayLabel = weekDays[index]?.toUpperCase();
         return (
           <button
@@ -35,17 +31,7 @@ export default function WeekStrip({ date, onDateSelect }) {
             aria-pressed={isSelected}
           >
             <span className="day-name">{weekDayLabel}</span>
-            <span
-              className={[
-                "day-chip",
-                isSelected && "day-chip--selected",
-                isToday && !isSelected && "day-chip--today",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              <span className="day-number">{d.getDate()}</span>
-            </span>
+            <span className="day-number">{d.getDate()}</span>
             <span className="day-dot" aria-hidden="true" />
           </button>
         );

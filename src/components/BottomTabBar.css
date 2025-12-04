@@ -4,15 +4,12 @@
   right: 0;
   bottom: 0;
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
-  padding: 0 24px env(safe-area-inset-bottom, 0px);
-  background: rgba(5, 5, 5, 0.9);
-  border-top: 1px solid var(--tabbar-border);
-  backdrop-filter: blur(26px);
-  -webkit-backdrop-filter: blur(26px);
-  box-shadow: 0 -24px 40px var(--tabbar-shadow);
+  padding: 0 20px env(safe-area-inset-bottom, 0px);
+  background: var(--tabbar-bg);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
+  border-top: 1px solid var(--line-soft);
   z-index: 1000;
 }
 
@@ -25,49 +22,31 @@
   background: none;
   color: var(--tabbar-muted);
   position: relative;
-  padding: 10px 0;
-  transition: color .18s ease;
+  padding: 8px 0;
 }
 
 .tab-btn:focus-visible{
   outline: none;
 }
 
-.tab-btn:focus-visible .icon-wrap{
-  box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.45);
-}
-
 .icon-wrap{
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--line-soft);
-  transition: transform .16s ease, box-shadow .16s ease, color .16s ease, border-color .16s ease;
 }
 
 .tab-btn.active{
   color: var(--tabbar-active);
 }
 
-.tab-btn.active .icon-wrap{
-  border-color: var(--line-accent);
-  color: var(--tabbar-active);
-  box-shadow: 0 0 18px rgba(0, 240, 255, 0.35);
-}
-
-.tab-btn:active .icon-wrap{
-  transform: scale(.92);
-}
-
 .tab-btn .icon{
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   stroke: currentColor;
   fill: none;
-  stroke-width: 1.6;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -76,13 +55,13 @@
   position: absolute;
   bottom: 4px;
   left: 50%;
-  width: 32px;
+  width: 24px;
   height: 2px;
   border-radius: 999px;
-  background: var(--accent-cyan);
+  background: var(--accent);
   opacity: 0;
   transform: translate(-50%, 6px);
-  transition: opacity .18s ease, transform .18s ease;
+  transition: opacity .15s ease, transform .15s ease;
 }
 
 .tab-btn.active .tab-indicator{

@@ -1,25 +1,16 @@
+
 .tasks-state {
   margin: 48px auto 24px;
-  padding: 28px 32px;
-  border-radius: 22px;
+  padding: 24px 28px;
+  border-radius: 16px;
   border: 1px solid var(--line-soft);
-  background: linear-gradient(135deg, rgba(6, 10, 12, 0.95), rgba(18, 24, 24, 0.85));
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  background: var(--bg-secondary);
   max-width: 360px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-}
-
-.tasks-state::after {
-  content: "";
-  display: block;
-  width: 80%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--line-accent), transparent);
-  opacity: 0.5;
+  gap: 10px;
 }
 
 .tasks-state-icon {
@@ -41,8 +32,7 @@
 }
 
 .tasks-state--warning {
-  border-color: rgba(255, 77, 77, 0.5);
-  box-shadow: 0 0 30px rgba(255, 77, 77, 0.22);
+  border-color: rgba(255, 77, 77, 0.4);
 }
 
 .tasks-state--muted {
@@ -50,7 +40,7 @@
 }
 
 .tasks-state--empty {
-  background: rgba(12, 12, 12, 0.8);
+  background: var(--bg-secondary);
 }
 
 .tasks-empty {

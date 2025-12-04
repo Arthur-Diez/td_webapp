@@ -1,44 +1,40 @@
 :root{
-  --fab-size: 56px;
+  --fab-size: 54px;
   --fab-gap: 16px;
 }
 
 .fab{
   position: fixed;
-  right: 24px;
+  right: 20px;
   bottom: calc(var(--tabbar-h) + var(--fab-gap) + env(safe-area-inset-bottom, 0px));
   width: var(--fab-size);
   height: var(--fab-size);
-  border-radius: 22px;
-  border: 1px solid var(--line-accent);
-  background: rgba(0, 0, 0, 0.85);
-  color: var(--fab-foreground);
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--bg-primary);
   display: grid;
   place-items: center;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, border-color .18s ease;
+  transition: transform .18s ease;
   z-index: 1200;
-  animation: fab-pop 220ms ease-out;
-  backdrop-filter: blur(18px);
+  animation: fab-pop 200ms ease-out;
 }
 
 .fab:hover{
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 28px rgba(0, 240, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .fab:active{
-  transform: translateY(2px) scale(.97);
+  transform: translateY(1px);
 }
 
 .fab-plus{
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 500;
   line-height: 1;
-  transform: translateY(-1px);
-  font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
-  color: var(--accent-cyan);
+  color: inherit;
 }
 
 @keyframes fab-pop{
