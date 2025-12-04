@@ -1,71 +1,66 @@
 :root {
-  --tabbar-h: 64px; /* высота нижней панели */
-}
-
-/* контент не уезжает под таббар */
-.app-content{
-  padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom, 0px));
-}
-
-.debug-console {
-  background: var(--tg-surface);
-  color: var(--tg-fg);
-  font-size: 12px;
-  padding: 12px;
-  margin: 12px auto;
-  max-width: 90%;
-  border-radius: 12px;
-  border: 1px solid var(--tg-outline-soft);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-  white-space: pre-wrap;
-}
-
-body, html {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
-  background: var(--tg-bg);
-  color: var(--tg-fg);
-  transition: background 0.3s, color 0.3s;
-  height: 100%;
-  overflow: hidden;
+  --tabbar-h: 64px;
 }
 
 .App {
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  position: relative;
+  color: var(--text-primary);
 }
 
 .main-content {
   flex: 1;
-  background: var(--tg-bg);
-  color: var(--tg-fg);
-  padding: 24px 16px 80px;
-  margin-top: 16px;
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0px -4px 12px rgba(0, 0, 0, 0.05);
+  padding: 24px 20px calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
-  transition: all 0.3s ease;
+  scroll-behavior: smooth;
+  position: relative;
+  background: transparent;
+}
+
+.app-content {
+  padding-bottom: calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom, 0px));
+}
+
+.main-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--app-surface);
+  border-radius: 32px 32px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+.debug-console {
+  display: none;
 }
 
 .icon-btn {
-  font-size: 20px;
-  background: none;
+  font-size: 18px;
   border: none;
-  cursor: pointer;
-  color: var(--tg-fg);
-  opacity: 0.8;
-  padding: 4px;
-  transition: 0.2s;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: 12px;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .icon-btn:hover {
-  opacity: 1;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-/* чтобы контент не перекрывался новой нижней панелью */
-.app-content{
-  padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom, 0px));
+.icon-btn:active {
+  transform: scale(0.95);
 }

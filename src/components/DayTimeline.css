@@ -1,235 +1,295 @@
-/* src/components/DayTimeline.css */
-
-/* ===== Управляем сдвигом влево через переменные ===== */
-:root{
-  --tl-time-w: 30px;         /* колонка времени — уже → всё левее */
-  --tl-pin-w: 46px;          /* колонка с кружком */
-  --tl-check-w: 30px;
-  --tl-gap: 10px;
-
-  --tl-card-radius: 14px;
-  --tl-pin-size: 44px;
-
-  /* цвета переопределяются через глобальные токены */
-  --tl-surface: var(--timeline-surface);
-  --tl-border: var(--timeline-border);
-  --tl-border-soft: var(--timeline-border-soft);
-  --tl-text-dim: var(--timeline-text-dim);
-  --tl-text-faint: var(--timeline-text-faint);
-
-  --tl-line-solid: var(--timeline-line-solid);
-  --tl-line-dash:  var(--timeline-line-dash);
-  --tl-line-clear: 4px;     /* отступ линии от края круга */
-  --tl-line-w: 2px;       /* толщина соединителя, можно 3px */
-  --tl-row-vpad: 10px; /* вертикальный паддинг строки */
-  --tl-pin-inset: var(--timeline-pin-inset);
-  --tl-pin-stroke: var(--timeline-pin-stroke);
+:root {
+  --tl-time-w: 48px;
+  --tl-pin-w: 54px;
+  --tl-check-w: 36px;
+  --tl-gap: 14px;
 }
 
-.tl{ max-width: 880px; margin: 0 auto; padding: 0 4px 24px; }
-.tl-wrap{ position: relative; margin-top: 2px; }
+.tl {
+  padding: 4px 2px 56px;
+}
 
-.tl-list{ list-style: none; margin: 0; padding: 0; }
-.tl-empty{ padding: 16px 8px; opacity: .7; text-align: center; }
-
-/* Строка: [время] [пин] [карточка] [чек] */
-.tl-row, .tl-gap-row{
-  display: grid;
-  grid-template-columns: var(--tl-time-w) var(--tl-pin-w) 1fr var(--tl-check-w);
-  gap: var(--tl-gap);
-  align-items: stretch;
-  padding: var(--tl-row-vpad) 0;  /* ⬅️ через переменную */
+.tl-wrap {
   position: relative;
-  min-height: calc(var(--tl-pin-size) + 12px);
 }
 
-/* Время — одна колонка одной высоты с кругом, чтобы совпадать по вертикали */
-.tl-time{
-  align-self: center;                 /* центрируем «блок времени» в строке */
-  min-height: var(--tl-pin-size);     /* высота = диаметр круга */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;            /* слева, «вплотную» */
-  padding-left: 0;                    /* без внутренних отступов */
-  text-align: left;                   /* слева */
-  line-height: 1.1;
-  font-size: 12px;
-  color: var(--tl-text-dim);
+.tl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-/* Одно время — по центру уровня круга */
-.tl-time--single{ justify-content: center; }
-
-/* Интервал — разнесём по верхнему/нижнему краю блока времени */
-.tl-time--range{ justify-content: space-between; }
-
-/* нижнее время у интервала — лишний зазор не нужен */
-.tl-time--range .tl-time-bottom{ margin-top: 0; }
-
-/* если где-то остался margin — нейтрализуем на всякий случай */
-.tl-time-bottom{ margin-top: 0; color: var(--tl-text-faint); }
-
-/* Кружок задачи */
-.tl-pin{
-  position: relative;
-  display: flex;
-  align-items: center;  /* центрируем круг внутри растянутой колонки */
-  justify-content: center;
-  z-index: 2;
-}
-.tl-pin-circle{
-  width: var(--tl-pin-size); height: var(--tl-pin-size);
-  border-radius: 50%;
-  background: var(--tl-surface);
-  display: grid; place-items: center;
-  font-weight: 700; color: var(--tl-text-dim);
-  box-shadow:
-    0 0 0 10px var(--tl-pin-inset) inset,
-    0 0 0 1px var(--tl-pin-stroke);
-}
-
-/* ===== Соединители (вертикальные линии) рисуем у каждого пина ===== */
-.tl-row .tl-pin::before,
-.tl-row .tl-pin::after,
-.tl-gap-row .tl-pin::before{
-  content: "";
-  position: absolute;
-  left: calc(50% - var(--tl-line-w)/2);  /* было calc(50% - 1px) */
-  width: var(--tl-line-w);               /* было 2px */
-  z-index: 1;
-  background: transparent;
-}
-
-/* ВЕРХ — спускаемся до верхнего паддинга предыдущей строки */
-.tl-row[data-prev-conn="solid"] .tl-pin::before{
-  top: calc(-1 * var(--tl-row-vpad));
-  height: calc(
-    50% - var(--tl-pin-size)/2 - var(--tl-line-clear) + var(--tl-row-vpad)
-  );
-}
-
-/* НИЗ — дотягиваемся до нижнего паддинга текущей строки */
-.tl-row[data-next-conn="solid"] .tl-pin::after{
-  top: calc(50% + var(--tl-pin-size)/2 + var(--tl-line-clear));
-  height: calc(
-    50% - var(--tl-pin-size)/2 - var(--tl-line-clear) + var(--tl-row-vpad)
-  );
-}
-.tl-row[data-next-conn="solid"]  .tl-pin::after{ background: var(--tl-line-solid); }
-/* Пунктир у самих задач больше не рисуем — только у GAP-строки */
-.tl-row[data-prev-conn="dashed"] .tl-pin::before,
-.tl-row[data-next-conn="dashed"] .tl-pin::after{
-  display: none;
-}
-.tl-row[data-next-conn="none"]   .tl-pin::after{ display:none; }
-
-/* GAP-строка — пунктир между кругами с равным отступом сверху/снизу */
-.tl-gap-row .tl-pin::before{
-  content:"";
-  position:absolute;
-  left: calc(50% - var(--tl-line-w)/2);
-  width: var(--tl-line-w);
-  z-index: 1;
-
-  /* одинаковый зазор от обоих кружков:
-     1/2 круга + вертикальный паддинг строки + line-clear */
-  top: calc(-1 * (var(--tl-row-vpad) + var(--tl-pin-size)/2 + var(--tl-line-clear)));
-  height: calc(
-    100% + 2 * (var(--tl-row-vpad) + var(--tl-pin-size)/2 + var(--tl-line-clear))
-  );
-
-  /* ровный пунктир: 8px штрих / 8px пробел, выровнен по центру */
-  background-image: linear-gradient(
-    to bottom,
-    var(--tl-line-dash) 0 50%,
-    transparent 0 100%
-  );
-  background-size: var(--tl-line-w) 16px;
-  background-repeat: repeat-y;
-  background-position: left center;
-}
-.tl-gap-row .tl-pin::after{ display:none; }
-
-/* Для GAP вместо кружка — маленькая точка */
-.tl-gap-dot::before{
-  content:"";
-  width: 10px; height: 10px; border-radius: 50%;
-  background: var(--tl-text-faint);
-  display: block;
-}
-
-/* Карточки */
-.tl-card{
-  border: 1px solid var(--tl-border);
-  border-radius: var(--tl-card-radius);
-  padding: 12px 14px;
-  background: var(--tl-surface);
-  box-shadow: 0 14px 32px var(--timeline-card-shadow);
-}
-.tl-meta{ font-size: 12px; color: var(--tl-text-faint); margin-bottom: 4px; }
-.tl-title{ font-size: 16px; font-weight: 700; }
-.tl-from{ margin-top: 6px; font-size: 12px; color: var(--tl-text-faint); }
-
-/* Правый чек */
-.tl-check{
-  width: 22px; height: 22px; border-radius: 50%;
-  border: 1.5px solid var(--tl-border);
-  justify-self: center;
-}
-.tl-check-hidden{ visibility: hidden; }
-
-/* ===== Блок «на весь день» — без линий между ними ===== */
-.tl-divider{ height: 1px; background: var(--tl-border); margin: 18px 0 8px; }
-.tl-all-day-title{
-  font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--tl-text-dim); margin: 0 0 8px calc(var(--tl-time-w));
-}
-
-.tl-allday-list{ list-style: none; margin: 0; padding: 0; }
-.tl-allday-row{
+.tl-row,
+.tl-gap-row {
   display: grid;
   grid-template-columns: var(--tl-time-w) var(--tl-pin-w) 1fr var(--tl-check-w);
   gap: var(--tl-gap);
   align-items: center;
+  position: relative;
+  padding: 18px 0;
+}
+
+.tl-time {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--timeline-text-dim);
+  text-align: right;
+  padding-right: 6px;
+}
+
+.tl-time-bottom {
+  color: var(--timeline-text-faint);
+  margin-top: 2px;
+}
+
+.tl-pin {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tl-pin::before,
+.tl-pin::after,
+.tl-gap-row .tl-pin::before {
+  content: "";
+  position: absolute;
+  width: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--timeline-line-solid);
+  z-index: 0;
+}
+
+.tl-row[data-prev-conn="solid"] .tl-pin::before {
+  top: -18px;
+  bottom: calc(50% + 28px);
+}
+
+.tl-row[data-prev-conn="none"] .tl-pin::before {
+  display: none;
+}
+
+.tl-row[data-next-conn="solid"] .tl-pin::after {
+  top: calc(50% + 28px);
+  bottom: -18px;
+}
+
+.tl-row[data-next-conn="none"] .tl-pin::after {
+  display: none;
+}
+
+.tl-gap-row .tl-pin::before {
+  top: -30px;
+  bottom: -30px;
+  background-image: linear-gradient(var(--timeline-line-dash) 6px, transparent 6px);
+  background-size: 2px 16px;
+  background-repeat: repeat-y;
+}
+
+.tl-pin-circle,
+.tl-ad-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0))
+      var(--task-accent, var(--tabbar-active)),
+    var(--task-accent, var(--tabbar-active));
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  position: relative;
+  z-index: 1;
+}
+
+.tl-card {
+  background: var(--timeline-surface);
+  border: 1px solid var(--timeline-border);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 12px 32px var(--timeline-card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tl-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.tl-meta {
+  font-size: 13px;
+  color: var(--timeline-text-faint);
+}
+
+.tl-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tl-pill {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(122, 92, 250, 0.15);
+  color: var(--timeline-text-dim);
+}
+
+.tl-pill--danger {
+  background: rgba(255, 95, 95, 0.15);
+  color: #FF5F5F;
+}
+
+.tl-card-body {
+  display: flex;
+  gap: 12px;
+}
+
+.tl-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--task-accent, var(--tabbar-active));
+  margin-top: 6px;
+}
+
+.tl-card-copy {
+  flex: 1;
+}
+
+.tl-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tl-desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.tl-from {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--timeline-text-faint);
+}
+
+.tl-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--timeline-border);
+  display: grid;
+  place-items: center;
+  color: var(--timeline-text-faint);
+}
+
+.tl-check::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tl-check-hidden {
+  visibility: hidden;
+}
+
+.tl-gap-row {
   padding: 8px 0;
 }
-.tl-ad-time{ text-align: right; font-size: 12px; color: var(--tl-text-faint); }
-.tl-ad-pin{ display: flex; justify-content: center; align-items: center; }
-.tl-ad-circle{
-  width: var(--tl-pin-size); height: var(--tl-pin-size); border-radius: 50%;
-  background: var(--tl-surface);
-  display: grid; place-items: center;
-  font-weight: 700; color: var(--tl-text-dim);
-  box-shadow:
-    0 0 0 10px var(--tl-pin-inset) inset,
-    0 0 0 1px var(--tl-pin-stroke);
-}
-.tl-ad-card{ border: 1px solid var(--tl-border); border-radius: var(--tl-card-radius); padding: 12px 14px; }
 
-/* Адаптив: узкие экраны */
-@media (max-width: 420px){
-  :root{
-    --tl-time-w: 40px;
-    --tl-pin-w: 48px;
+.tl-gap-label {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--timeline-text-faint);
+  text-transform: uppercase;
+}
+
+.tl-empty {
+  margin: 12px 0;
+  padding: 16px;
+  text-align: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--timeline-text-faint);
+}
+
+.tl-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--timeline-border), transparent);
+  margin: 28px 0 16px;
+}
+
+.tl-all-day-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--timeline-text-dim);
+  margin-bottom: 12px;
+}
+
+.tl-allday-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tl-allday-row {
+  display: grid;
+  grid-template-columns: 72px 56px 1fr 32px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.tl-ad-time {
+  font-size: 13px;
+  color: var(--timeline-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tl-ad-card {
+  background: var(--timeline-surface);
+  border: 1px solid var(--timeline-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+@media (max-width: 420px) {
+  :root {
+    --tl-time-w: 42px;
+    --tl-pin-w: 46px;
     --tl-check-w: 28px;
   }
-  .tl-title{ font-size: 15px; }
-}
 
-/* ====== Надпись перерыва (без карточки) ====== */
-.tl-gap-row{
-  /* у gap-строки делаем компактную высоту */
-  padding: 2px 0;
-  min-height: 24px;           /* было как у обычной строки — слишком много */
-}
+  .tl-card {
+    padding: 14px 15px;
+  }
 
-.tl-gap-label{
-  align-self: center;          /* по вертикали по центру строки */
-  justify-self: start;         /* в колонке "карточки" — слева */
-  font-size: 12px;
-  line-height: 1.1;
-  color: var(--tl-text-faint);
-  padding: 0 2px;              /* без рамок и фона */
-}
+  .tl-card-body {
+    flex-direction: column;
+  }
 
-/* если где-то остались старые стили для .tl-card.tl-gap — они больше не используются */
+  .tl-color-dot {
+    margin-top: 0;
+  }
+}

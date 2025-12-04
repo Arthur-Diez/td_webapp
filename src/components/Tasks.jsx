@@ -2,6 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import DayTimeline from './DayTimeline';
 import { getTasksForDate, api } from '../utils/api';
+import './Tasks.css';
+
+const StateCard = ({ icon, title, subtitle, tone = 'default' }) => (
+  <section className={`tasks-state tasks-state--${tone}`}>
+    <div className="tasks-state-icon">{icon}</div>
+    <div className="tasks-state-body">
+      <h3>{title}</h3>
+      {subtitle && <p>{subtitle}</p>}
+    </div>
+  </section>
+);
 
 export default function Tasks({ date, telegramId, setConsoleData = () => {} }) {
   const [tasks, setTasks] = useState([]);
@@ -46,11 +57,51 @@ export default function Tasks({ date, telegramId, setConsoleData = () => {} }) {
     };
   }, [telegramId, date, setConsoleData]);
 
-  if (!telegramId) return <p style={{ textAlign: 'center' }}>🔒 Не удалось определить пользователя</p>;
-  if (loading)     return <p style={{ textAlign: 'center' }}>⏳ Загружаю задачи...</p>;
-  if (error)       return <p style={{ textAlign: 'center' }}>⚠️ Ошибка: {String(error)}</p>;
-  if (tasks.length === 0) return <p style={{ textAlign: 'center' }}>📭 Нет задач на этот день</p>;
+  if (!telegramId) {
+    return (
+      <StateCard
+        icon="🔒"
+        title="Нужна авторизация"
+        subtitle="Перезапустите мини‑приложение в Telegram"
+        tone="warning"
+      />
+    );
+  }
 
-  // НОВОЕ отображение
+  if (loading) {
+    return (
+      <StateCard
+        icon="⌛"
+        title="Синхронизация задач"
+        subtitle="Подтягиваем ваш день..."
+        tone="muted"
+      />
+    );
+  }
+
+  if (error) {
+    return (
+      <StateCard
+        icon="⚠️"
+        title="Не удалось загрузить"
+        subtitle={String(error)}
+        tone="warning"
+      />
+    );
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <section className="tasks-empty">
+        <StateCard
+          icon="🗓"
+          title="На этот день нет задач"
+          subtitle="Нажмите «+», чтобы добавить первую"
+          tone="empty"
+        />
+      </section>
+    );
+  }
+
   return <DayTimeline dateISO={date} tasks={tasks} />;
 }

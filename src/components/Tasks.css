@@ -1,0 +1,57 @@
+.tasks-state {
+  margin: 48px auto 24px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(31, 31, 39, 0.65);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  max-width: 360px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: border 0.2s ease, background 0.2s ease;
+}
+
+body:not(.dark) .tasks-state {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(16, 18, 26, 0.08);
+}
+
+.tasks-state-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.tasks-state-body h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tasks-state-body p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.tasks-state--warning {
+  border-color: rgba(255, 95, 95, 0.5);
+}
+
+.tasks-state--muted {
+  opacity: 0.85;
+}
+
+.tasks-state--empty {
+  background: rgba(31, 31, 39, 0.7);
+}
+
+.tasks-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 240px;
+}

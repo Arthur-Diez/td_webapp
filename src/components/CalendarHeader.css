@@ -1,32 +1,91 @@
 .calendar-header {
-  display: flex;
-  justify-content: space-between;
+  padding: 18px 20px 12px;
+  display: grid;
+  grid-template-columns: 80px 1fr 96px;
   align-items: center;
-  padding: 16px 20px 6px 20px;
-  font-size: 22px;
-  background-color: var(--tg-bg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  background: transparent;
+  min-height: 64px;
 }
 
-.calendar-title {
+.calendar-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 20px 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0.5;
+}
+
+.calendar-slot {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
 }
 
-.month {
-  font-weight: bold;
+.calendar-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.calendar-heading {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.calendar-heading-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--text-muted);
+}
+
+.calendar-heading-value {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   text-transform: lowercase;
+  color: var(--text-primary);
+  animation: monthShift 160ms ease forwards;
 }
 
-.year {
-  color: var(--tg-accent);
-  font-weight: 500;
+.calendar-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
-.calendar-icons {
-  display: flex;
-  gap: 16px;
-  font-size: 22px;
-  color: var(--tg-fg);
-  opacity: 0.8;
+.calendar-chip svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.calendar-chip:focus-visible {
+  outline: 2px solid rgba(122, 92, 250, 0.9);
+  outline-offset: 2px;
+}
+
+@keyframes monthShift {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

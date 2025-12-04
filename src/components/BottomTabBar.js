@@ -2,19 +2,24 @@
 import React from "react";
 import "./BottomTabBar.css";
 
-const Tab = ({ id, label, active, onChange, children }) => (
-  <button
-    className={`tab-btn ${active ? "active" : ""}`}
-    onClick={() => onChange(id)}
-    type="button"
-    role="tab"
-    aria-selected={active}
-    tabIndex={active ? 0 : -1}
-  >
-    <span className="icon-wrap">{children}</span>
-    <span className="label">{label}</span>
-  </button>
-);
+const Tab = ({ id, label, active, onChange, children }) => {
+  const isActive = Boolean(active);
+  return (
+    <button
+      className={`tab-btn ${isActive ? "active" : ""}`}
+      onClick={() => onChange(id)}
+      type="button"
+      role="tab"
+      aria-selected={isActive}
+      aria-current={isActive ? "page" : undefined}
+      tabIndex={isActive ? 0 : -1}
+    >
+      <span className="icon-wrap">{children}</span>
+      <span className="label">{label}</span>
+      <span className="tab-indicator" aria-hidden="true" />
+    </button>
+  );
+};
 
 export default function BottomTabBar({ active = "tasks", onChange = () => {} }) {
   return (
