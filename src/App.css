@@ -1,5 +1,5 @@
 :root {
-  --tabbar-h: 64px;
+  --tabbar-h: 72px;
 }
 
 .App {
@@ -8,11 +8,12 @@
   flex-direction: column;
   position: relative;
   color: var(--text-primary);
+  background: var(--app-gradient);
 }
 
 .main-content {
   flex: 1;
-  padding: 24px 20px calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom, 0px));
+  padding: 32px 24px calc(var(--tabbar-h) + 36px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   scroll-behavior: smooth;
   position: relative;
@@ -20,19 +21,19 @@
 }
 
 .app-content {
-  padding-bottom: calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--tabbar-h) + 36px + env(safe-area-inset-bottom, 0px));
 }
 
 .main-content::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--app-surface);
-  border-radius: 32px 32px 0 0;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.6) 100%);
+  border-radius: 36px 36px 0 0;
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
   pointer-events: none;
   z-index: 0;
 }
@@ -48,17 +49,19 @@
 
 .icon-btn {
   font-size: 18px;
-  border: none;
-  background: transparent;
+  border: 1px solid var(--line-soft);
+  background: rgba(0, 0, 0, 0.4);
   color: var(--text-secondary);
-  padding: 6px;
-  border-radius: 12px;
-  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  padding: 8px;
+  border-radius: 16px;
+  transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .icon-btn:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
 }
 
 .icon-btn:active {

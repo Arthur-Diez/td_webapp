@@ -5,36 +5,40 @@
 
 .fab{
   position: fixed;
-  right: 20px;
+  right: 24px;
   bottom: calc(var(--tabbar-h) + var(--fab-gap) + env(safe-area-inset-bottom, 0px));
   width: var(--fab-size);
   height: var(--fab-size);
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #7A5CFA, #5361FF);
+  border-radius: 22px;
+  border: 1px solid var(--line-accent);
+  background: rgba(0, 0, 0, 0.85);
   color: var(--fab-foreground);
   display: grid;
   place-items: center;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, border-color .18s ease;
   z-index: 1200;
   animation: fab-pop 220ms ease-out;
+  backdrop-filter: blur(18px);
 }
 
 .fab:hover{
-  filter: brightness(1.05);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 28px rgba(0, 240, 255, 0.35);
 }
 
 .fab:active{
-  transform: scale(.92);
+  transform: translateY(2px) scale(.97);
 }
 
 .fab-plus{
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   line-height: 1;
   transform: translateY(-1px);
+  font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
+  color: var(--accent-cyan);
 }
 
 @keyframes fab-pop{
